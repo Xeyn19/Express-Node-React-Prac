@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const EyeIcon = () => (
   <svg
@@ -51,6 +52,7 @@ const initialFormData = {
 };
 
 const Register = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState(initialFormData);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -112,6 +114,10 @@ const Register = () => {
 
       setSuccessMessage(result.message || "Registration successful.");
       setFormData(initialFormData);
+      setTimeout(() => {
+        alert('Redirecting to Login')
+        navigate("/login");
+      }, 3000)
     } catch {
       setError("Unable to connect to server.");
     } finally {
