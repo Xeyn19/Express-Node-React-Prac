@@ -1,11 +1,11 @@
-# Backend (Express + MySQL)
+# Backend (Express API)
 
-This is the backend API for the project. It uses Express, MySQL (`mysql2`), and `bcryptjs` for password hashing.
+This is the backend API for the project. It uses Express, `mysql2`, and `bcryptjs` for authentication-related logic.
 
 ## Requirements
 
 - Node.js 18+
-- XAMPP MySQL running
+- A running MySQL server
 
 ## Install and Run
 
@@ -16,31 +16,27 @@ npm start
 
 Backend runs on `http://localhost:8000` by default.
 
-## Environment Variables
+## Environment
 
+Create a local `backend/.env` file with your own values. Do not commit it to git.
 
-## Database Setup (MySQL/XAMPP)
+Required keys:
 
-Run this in phpMyAdmin SQL tab:
-
-
-CREATE TABLE IF NOT EXISTS `users` (
-  `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  `first_name` VARCHAR(100) NOT NULL,
-  `last_name` VARCHAR(100) NOT NULL,
-  `email` VARCHAR(191) NOT NULL UNIQUE,
-  `password` VARCHAR(255) NOT NULL,
-  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
+- `PORT`
+- `DB_HOST`
+- `DB_PORT`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_NAME`
 
 ## API Endpoints
 
 - `GET /` -> health check
 - `GET /api/recipes` -> returns sample recipes
-- `GET /api/login` -> sample login message
-- `GET /api/signup` -> sample signup message
-- `POST /api/register` -> create user in `users` table
+- `GET /api/login` -> sample login message route
+- `GET /api/signup` -> sample signup message route
+- `POST /api/register` -> register user
+- `POST /api/login` -> login user
 
 ### Register Request Body
 
@@ -53,16 +49,11 @@ CREATE TABLE IF NOT EXISTS `users` (
 }
 ```
 
-### Register Success Response
+### Login Request Body
 
 ```json
 {
-  "message": "Registration successful.",
-  "user": {
-    "id": 1,
-    "firstName": "John",
-    "lastName": "Doe",
-    "email": "john@example.com"
-  }
+  "email": "john@example.com",
+  "password": "123456"
 }
 ```

@@ -97,7 +97,10 @@ const Login = () => {
       setSuccessMessage(result.message || "Login successful.");
       localStorage.setItem("authUser", JSON.stringify(result.user));
       setLoginData(initialLoginData);
-      navigate("/dashboard", { state: { user: result.user } });
+      setTimeout(() => {
+        alert(`Welcome ${result.user.first_name} ${result.user.last_name}`);
+        navigate("/dashboard", { state: { user: result.user } });
+      }, 3000);
     } catch {
       setError("Unable to connect to server.");
     } finally {

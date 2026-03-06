@@ -8,7 +8,7 @@ const Dashboard = () => {
   const user = location.state?.user || parsedUser;
 
   const fullName = user
-    ? `${user.firstName || ""} ${user.lastName || ""}`.trim()
+    ? `${user.first_name || user.firstName || ""} ${user.last_name || user.lastName || ""}`.trim()
     : "";
 
   return (
@@ -16,7 +16,7 @@ const Dashboard = () => {
       <div className="card w-full max-w-lg bg-base-100 shadow-xl">
         <div className="card-body">
           <h1 className="card-title text-2xl">
-            {fullName ? `Welcome !, ${fullName.toUpperCase()}` : "Welcome, User"}
+            {fullName ? `Welcome back !, ${fullName.toUpperCase()}` : "Welcome, User"}
           </h1>
 
           {!fullName && (

@@ -28,13 +28,20 @@ Frontend runs on Vite default URL (usually `http://localhost:5173`).
 - `/` -> Home page
 - `/recipes` -> fetches and shows recipes from backend
 - `/register` -> registration form (first name, last name, email, password, confirm password)
+- `/login` -> login form
+- `/dashboard` -> welcome page after successful login
 
 ## Backend Integration
 
 Register form sends:
 
 - `POST /api/register`
-- Default API base URL: `http://localhost:8000`
+
+Login form sends:
+
+- `POST /api/login`
+
+Default API base URL: `http://localhost:8000`
 
 To use a different backend URL, create `frontend/.env`:
 

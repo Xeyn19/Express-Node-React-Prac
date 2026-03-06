@@ -29,8 +29,8 @@ export const loginUser = async (req, res) => {
       message: "Login successful.",
       user: {
         id: user.id,
-        firstName: user.first_name,
-        lastName: user.last_name,
+        first_name: user.first_name,
+        last_name: user.last_name,
         email: user.email,
       },
     });
