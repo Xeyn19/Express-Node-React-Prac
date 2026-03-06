@@ -1,12 +1,43 @@
-# React + Vite
+# Frontend (React + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend app for the project. It uses React, React Router, Tailwind CSS, and DaisyUI.
 
-Currently, two official plugins are available:
+## Requirements
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js 18+
+- Backend running on `http://localhost:8000` (or set custom API URL)
 
-## Expanding the ESLint configuration
+## Install and Run
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+npm run dev
+```
+
+Frontend runs on Vite default URL (usually `http://localhost:5173`).
+
+## Available Scripts
+
+- `npm run dev` -> start development server
+- `npm run build` -> production build
+- `npm run preview` -> preview built app
+- `npm run lint` -> run ESLint
+
+## Routes
+
+- `/` -> Home page
+- `/recipes` -> fetches and shows recipes from backend
+- `/register` -> registration form (first name, last name, email, password, confirm password)
+
+## Backend Integration
+
+Register form sends:
+
+- `POST /api/register`
+- Default API base URL: `http://localhost:8000`
+
+To use a different backend URL, create `frontend/.env`:
+
+```env
+VITE_API_URL=http://localhost:8000
+```
