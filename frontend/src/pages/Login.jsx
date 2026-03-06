@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const EyeIcon = () => (
   <svg
@@ -42,27 +42,23 @@ const EyeOffIcon = () => (
   </svg>
 );
 
-const initialFormData = {
-  firstName: "",
-  lastName: "",
+const initialLoginData = {
   email: "",
   password: "",
-  confirmPassword: "",
 };
 
-const Register = () => {
-  const [formData, setFormData] = useState(initialFormData);
+const Login = () => {
+  const navigate = useNavigate();
+  const [loginData, setLoginData] = useState(initialLoginData);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
   const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
   const handleChange = (event) => {
     const { name, value } = event.target;
-    setFormData((previous) => ({
+    setLoginData((previous) => ({
       ...previous,
       [name]: value,
     }));
@@ -73,45 +69,35 @@ const Register = () => {
     setError("");
     setSuccessMessage("");
 
-    const hasEmptyField = Object.values(formData).some(
-      (value) => value.trim() === ""
-    );
-
-    if (hasEmptyField) {
-      setError("Please fill in all fields.");
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError("Password and Confirm Password do not match.");
+    if (!loginData.email.trim() || !loginData.password.trim()) {
+      setError("Please enter both email and password.");
       return;
     }
 
     try {
       setIsSubmitting(true);
-
-      const response = await fetch(`${apiBaseUrl}/api/register`, {
+      const response = await fetch(`${apiBaseUrl}/api/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          firstName: formData.firstName.trim(),
-          lastName: formData.lastName.trim(),
-          email: formData.email.trim(),
-          password: formData.password,
+          email: loginData.email.trim(),
+          password: loginData.password,
         }),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        setError(result.message || "Registration failed.");
+        setError(result.message || "Login failed.");
         return;
       }
 
-      setSuccessMessage(result.message || "Registration successful.");
-      setFormData(initialFormData);
+      setSuccessMessage(result.message || "Login successful.");
+      localStorage.setItem("authUser", JSON.stringify(result.user));
+      setLoginData(initialLoginData);
+      navigate("/dashboard", { state: { user: result.user } });
     } catch {
       setError("Unable to connect to server.");
     } finally {
@@ -121,46 +107,20 @@ const Register = () => {
 
   return (
     <div className="min-h-screen bg-base-200 flex items-center justify-center px-4">
-      <div className="card w-full max-w-lg bg-base-100 shadow-xl">
+      <div className="card w-full max-w-md bg-base-100 shadow-xl">
         <div className="card-body">
-          <h1 className="card-title text-2xl">Create Account</h1>
+          <h1 className="card-title text-2xl">Login</h1>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label className="form-control w-full">
-                <span className="label-text mb-1">First Name</span>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  className="input input-bordered w-full"
-                  placeholder="John"
-                />
-              </label>
-
-              <label className="form-control w-full">
-                <span className="label-text mb-1">Last Name</span>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  className="input input-bordered w-full"
-                  placeholder="Doe"
-                />
-              </label>
-            </div>
-
             <label className="form-control w-full">
               <span className="label-text mb-1">Email</span>
               <input
                 type="email"
                 name="email"
-                value={formData.email}
+                value={loginData.email}
                 onChange={handleChange}
                 className="input input-bordered w-full"
-                placeholder="john@example.com"
+                placeholder="you@example.com"
               />
             </label>
 
@@ -170,7 +130,7 @@ const Register = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   name="password"
-                  value={formData.password}
+                  value={loginData.password}
                   onChange={handleChange}
                   className="input input-bordered w-full pr-12"
                   placeholder="Enter password"
@@ -186,34 +146,6 @@ const Register = () => {
               </div>
             </label>
 
-            <label className="form-control w-full">
-              <span className="label-text mb-1">Confirm Password</span>
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="input input-bordered w-full pr-12"
-                  placeholder="Confirm password"
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-2 my-auto text-base-content/70 hover:text-base-content"
-                  onClick={() =>
-                    setShowConfirmPassword((previous) => !previous)
-                  }
-                  aria-label={
-                    showConfirmPassword
-                      ? "Hide confirm password"
-                      : "Show confirm password"
-                  }
-                >
-                  {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
-                </button>
-              </div>
-            </label>
-
             {error && <div className="alert alert-error py-2">{error}</div>}
             {successMessage && (
               <div className="alert alert-success py-2">{successMessage}</div>
@@ -224,11 +156,10 @@ const Register = () => {
               className={`btn btn-primary w-full ${isSubmitting ? "btn-disabled" : ""}`}
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Registering..." : "Register"}
+              {isSubmitting ? "Signing In..." : "Login"}
             </button>
-
-            <Link to="/login" className="btn btn-outline w-full">
-              Already have an account? Login
+            <Link to="/register" className="btn btn-outline w-full">
+              Don't have an account? Register.
             </Link>
           </form>
         </div>
@@ -237,4 +168,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Login;
