@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../lib/api";
 
 const EyeIcon = () => (
   <svg
@@ -59,9 +60,6 @@ const Register = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((previous) => ({
@@ -92,11 +90,8 @@ const Register = () => {
     try {
       setIsSubmitting(true);
 
-      const response = await fetch(`${apiBaseUrl}/api/register`, {
+      const response = await apiFetch("/api/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
           firstName: formData.firstName.trim(),
           lastName: formData.lastName.trim(),
@@ -115,9 +110,16 @@ const Register = () => {
       setSuccessMessage(result.message || "Registration successful.");
       setFormData(initialFormData);
       setTimeout(() => {
-        alert('Redirecting to Login')
-        navigate("/login");
-      }, 3000)
+        alert('Redirecting to Login!')
+        navigate("/login", {
+        replace: true,
+        state: {
+          message: "Registration successful. Please login.",
+          email: formData.email.trim(),
+        },
+      }, 3000);
+      })
+      
     } catch {
       setError("Unable to connect to server.");
     } finally {
@@ -220,14 +222,14 @@ const Register = () => {
               </div>
             </label>
 
-            {error && <div className="alert alert-error py-2">{error}</div>}
+            {error && <div className="alert alert-error py-2 mt-3">{error}</div>}
             {successMessage && (
-              <div className="alert alert-success py-2">{successMessage}</div>
+              <div className="alert alert-success py-2 mt-3">{successMessage}</div>
             )}
 
             <button
               type="submit"
-              className={`btn btn-primary w-full ${isSubmitting ? "btn-disabled" : ""}`}
+              className={`btn btn-primary w-full mt-3 ${isSubmitting ? "btn-disabled" : ""}`}
               disabled={isSubmitting}
             >
               {isSubmitting ? "Registering..." : "Register"}

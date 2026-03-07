@@ -1,5 +1,8 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { apiFetch } from "../lib/api";
+import { getAccessToken } from "../lib/auth";
+import { useAuth } from "../context/AuthContext";
 
 const EyeIcon = () => (
   <svg
@@ -49,12 +52,24 @@ const initialLoginData = {
 
 const Login = () => {
   const navigate = useNavigate();
-  const [loginData, setLoginData] = useState(initialLoginData);
+  const location = useLocation();
+  const { login } = useAuth();
+  const [loginData, setLoginData] = useState({
+    ...initialLoginData,
+    email: location.state?.email || "",
+  });
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState(
+    location.state?.message || ""
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
+  useEffect(() => {
+    if (getAccessToken()) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -76,11 +91,8 @@ const Login = () => {
 
     try {
       setIsSubmitting(true);
-      const response = await fetch(`${apiBaseUrl}/api/login`, {
+      const response = await apiFetch("/api/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
           email: loginData.email.trim(),
           password: loginData.password,
@@ -95,12 +107,16 @@ const Login = () => {
       }
 
       setSuccessMessage(result.message || "Login successful.");
-      localStorage.setItem("authUser", JSON.stringify(result.user));
+      login({
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+        user: result.user,
+      });
       setLoginData(initialLoginData);
-      setTimeout(() => {
-        alert(`Welcome ${result.user.first_name} ${result.user.last_name}`);
-        navigate("/dashboard", { state: { user: result.user } });
-      }, 3000);
+      navigate(location.state?.from || "/dashboard", {
+        replace: true,
+        state: { user: result.user },
+      });
     } catch {
       setError("Unable to connect to server.");
     } finally {
@@ -149,14 +165,14 @@ const Login = () => {
               </div>
             </label>
 
-            {error && <div className="alert alert-error py-2">{error}</div>}
+            {error && <div className="alert alert-error py-2 mt-3">{error}</div>}
             {successMessage && (
-              <div className="alert alert-success py-2">{successMessage}</div>
+              <div className="alert alert-success py-2 mt-3">{successMessage}</div>
             )}
 
             <button
               type="submit"
-              className={`btn btn-primary w-full ${isSubmitting ? "btn-disabled" : ""}`}
+              className={`btn btn-primary w-full mt-3 ${isSubmitting ? "btn-disabled" : ""}`}
               disabled={isSubmitting}
             >
               {isSubmitting ? "Signing In..." : "Login"}

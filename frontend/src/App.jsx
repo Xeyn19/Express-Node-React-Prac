@@ -4,6 +4,7 @@ import Recipes from './pages/Recipes';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import ProtectedRoute from './components/ProtectedRoute';
 
 
 function App() {
@@ -11,10 +12,12 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/recipes" element={<Recipes />} />
         <Route path='/register' element={<Register />}/>
         <Route path='/login' element={<Login />} />
-        <Route path='/dashboard' element={<Dashboard />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path='/dashboard' element={<Dashboard />} />
+          <Route path="/recipes" element={<Recipes />} />
+        </Route>
 
       </Routes>
     </Router>

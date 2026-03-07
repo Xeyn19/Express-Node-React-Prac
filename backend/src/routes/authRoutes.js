@@ -1,9 +1,13 @@
 import express from "express";
-import { userLogin, userSignUp } from "../controllers/authController.js";
+import {
+  getAuthenticatedUser,
+  refreshAccessToken,
+} from "../controllers/authController.js";
+import { authenticateAccessToken } from "../middleware/authMiddleware.js";
 
 const authRouter = express.Router();
 
-authRouter.get("/login", userLogin);
-authRouter.get("/signup", userSignUp);
+authRouter.post("/refresh", refreshAccessToken);
+authRouter.get("/me", authenticateAccessToken, getAuthenticatedUser);
 
 export default authRouter;

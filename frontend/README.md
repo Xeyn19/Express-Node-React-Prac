@@ -1,11 +1,18 @@
 # Frontend (React + Vite)
 
-This is the frontend app for the project. It uses React, React Router, Tailwind CSS, and DaisyUI.
+React frontend for register, login, protected routing, dashboard session handling, and protected recipe fetching.
+
+## Stack
+
+- React
+- React Router
+- Tailwind CSS
+- DaisyUI
 
 ## Requirements
 
 - Node.js 18+
-- Backend running on `http://localhost:8000` (or set custom API URL)
+- Backend running locally or at a configured API URL
 
 ## Install and Run
 
@@ -14,37 +21,85 @@ npm install
 npm run dev
 ```
 
-Frontend runs on Vite default URL (usually `http://localhost:5173`).
+Default frontend URL:
 
-## Available Scripts
+- `http://localhost:3000`
 
-- `npm run dev` -> start development server
-- `npm run build` -> production build
-- `npm run preview` -> preview built app
-- `npm run lint` -> run ESLint
+## Environment
 
-## Routes
-
-- `/` -> Home page
-- `/recipes` -> fetches and shows recipes from backend
-- `/register` -> registration form (first name, last name, email, password, confirm password)
-- `/login` -> login form
-- `/dashboard` -> welcome page after successful login
-
-## Backend Integration
-
-Register form sends:
-
-- `POST /api/register`
-
-Login form sends:
-
-- `POST /api/login`
-
-Default API base URL: `http://localhost:8000`
-
-To use a different backend URL, create `frontend/.env`:
+Set the backend base URL with `frontend/.env`:
 
 ```env
 VITE_API_URL=http://localhost:8000
 ```
+
+## Routes
+
+- `/` -> home page
+- `/register` -> account registration
+- `/login` -> login page
+- `/dashboard` -> protected dashboard route
+- `/recipes` -> protected recipes route
+
+## Auth Flow
+
+1. User registers from `/register`
+2. Frontend sends `POST /api/register`
+3. After success, frontend redirects to `/login`
+4. User logs in from `/login`
+5. Frontend sends `POST /api/login`
+6. Frontend stores:
+   - `accessToken`
+   - `refreshToken`
+   - `authUser`
+7. User is redirected to `/dashboard`
+8. Protected pages use the stored access token automatically
+9. If the access token expires, frontend requests a new one with the refresh token
+
+## Protected Routing
+
+Protected routing is handled with:
+
+- `AuthContext`
+- `ProtectedRoute`
+
+Protected pages:
+
+- `/dashboard`
+- `/recipes`
+
+If there is no valid authenticated session, the user is redirected to `/login`.
+
+## Session Handling
+
+Frontend auth/session helpers are split into:
+
+- `src/lib/auth.js` -> local storage helpers
+- `src/lib/api.js` -> API calls and refresh-token retry logic
+- `src/context/AuthContext.jsx` -> shared auth state
+- `src/components/ProtectedRoute.jsx` -> route guard
+
+## Backend Integration
+
+Frontend uses these backend endpoints:
+
+- `POST /api/register`
+- `POST /api/login`
+- `POST /api/auth/refresh`
+- `GET /api/auth/me`
+- `GET /api/recipes`
+
+## Behavior Notes
+
+- Register does not log the user in automatically
+- Login is the only flow that stores JWTs
+- Dashboard uses shared auth context
+- Recipes page uses authenticated API requests
+- Logout clears local session data and returns the user to `/login`
+
+## Scripts
+
+- `npm run dev` -> start development server
+- `npm run build` -> build for production
+- `npm run preview` -> preview production build
+- `npm run lint` -> run ESLint

@@ -1,5 +1,9 @@
 import bcrypt from "bcryptjs";
 import { findLoginUserByEmail } from "../models/loginModel.js";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+} from "../utils/token.js";
 
 const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
@@ -27,6 +31,9 @@ export const loginUser = async (req, res) => {
 
     return res.status(200).json({
       message: "Login successful.",
+      accessToken: generateAccessToken(user),
+      refreshToken: generateRefreshToken(user),
+      tokenType: "Bearer",
       user: {
         id: user.id,
         first_name: user.first_name,
