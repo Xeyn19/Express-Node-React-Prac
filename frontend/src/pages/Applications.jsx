@@ -12,6 +12,9 @@ const Applications = () => {
   );
   const [isDeleting, setIsDeleting] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [dateSort, setDateSort] = useState("newest");
   const [editingJobId, setEditingJobId] = useState(null);
   const [editForm, setEditForm] = useState({
     company: "",
@@ -67,6 +70,33 @@ const Applications = () => {
     const timer = setTimeout(() => setSuccessMessage(""), 3000);
     return () => clearTimeout(timer);
   }, [successMessage]);
+
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const filteredJobs = jobs
+    .filter((job) => {
+      if (statusFilter === "All") {
+        return true;
+      }
+      return job.status === statusFilter;
+    })
+    .filter((job) => {
+      if (!normalizedSearch) {
+        return true;
+      }
+      const company = job.company?.toLowerCase() || "";
+      const position = job.position?.toLowerCase() || "";
+      return (
+        company.includes(normalizedSearch) || position.includes(normalizedSearch)
+      );
+    })
+    .sort((a, b) => {
+      const aDate = new Date(a.date_applied || 0).getTime();
+      const bDate = new Date(b.date_applied || 0).getTime();
+      if (dateSort === "oldest") {
+        return aDate - bDate;
+      }
+      return bDate - aDate;
+    });
 
   const openEditModal = (job) => {
     setError("");
@@ -217,11 +247,51 @@ const Applications = () => {
             </p>
           </div>
           <span className="text-xs text-slate-400">
-            {jobs.length ? `${jobs.length} total` : "No data yet"}
+            {jobs.length
+              ? `Showing ${filteredJobs.length} of ${jobs.length} applications`
+              : "No data yet"}
           </span>
         </div>
 
         <div className="mt-6 space-y-4">
+          <div className="grid gap-3 md:grid-cols-3">
+            <label className="flex flex-col gap-2 text-sm text-slate-600">
+              Search
+              <input
+                type="search"
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Search company or role"
+                className="input input-bordered w-full"
+              />
+            </label>
+            <label className="flex flex-col gap-2 text-sm text-slate-600">
+              Status
+              <select
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value)}
+                className="select select-bordered w-full"
+              >
+                <option>All</option>
+                <option>Applied</option>
+                <option>Interview</option>
+                <option>Offer</option>
+                <option>Rejected</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-2 text-sm text-slate-600">
+              Date Sort
+              <select
+                value={dateSort}
+                onChange={(event) => setDateSort(event.target.value)}
+                className="select select-bordered w-full"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+              </select>
+            </label>
+          </div>
+
           {successMessage && (
             <div className="alert alert-success py-2">{successMessage}</div>
           )}
@@ -236,7 +306,13 @@ const Applications = () => {
             </div>
           )}
 
-          {!isLoading && jobs.length > 0 && (
+          {!isLoading && jobs.length > 0 && filteredJobs.length === 0 && (
+            <div className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+              No applications match your search and filters.
+            </div>
+          )}
+
+          {!isLoading && filteredJobs.length > 0 && (
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
                 <thead className="bg-slate-50 text-slate-500">
@@ -252,7 +328,7 @@ const Applications = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {jobs.map((job) => (
+                  {filteredJobs.map((job) => (
                     <tr key={job.id}>
                       <td className="px-4 py-3 font-medium text-slate-800">
                         {job.company}

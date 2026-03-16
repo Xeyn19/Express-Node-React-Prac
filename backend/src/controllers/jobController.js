@@ -117,7 +117,29 @@ export const getJobs = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized." });
     }
 
-    const jobs = await getJobApplicationsByUserId(userId);
+    const statusQuery = req.query.status;
+    const searchQuery = typeof req.query.search === "string" ? req.query.search : "";
+    const sortQuery = typeof req.query.sort === "string" ? req.query.sort : "";
+
+    let status = null;
+    if (statusQuery && statusQuery !== "All") {
+      if (!allowedStatuses.has(statusQuery)) {
+        return res.status(400).json({
+          message: "Invalid status filter.",
+        });
+      }
+      status = statusQuery;
+    }
+
+    const search = searchQuery.trim();
+    const sort =
+      sortQuery === "oldest" || sortQuery === "newest" ? sortQuery : null;
+
+    const jobs = await getJobApplicationsByUserId(userId, {
+      status,
+      search,
+      sort,
+    });
     const baseUrl = `${req.protocol}://${req.get("host")}`;
 
     const withResumeUrls = jobs.map((job) => ({

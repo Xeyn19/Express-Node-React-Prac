@@ -27,11 +27,29 @@ export const createJobApplication = async ({
   return result.insertId;
 };
 
-export const getJobApplicationsByUserId = async (userId) => {
-  const [rows] = await db.query(
-    "SELECT id, company, position, status, date_applied, job_url, notes, resume_path, created_at FROM job_applications WHERE user_id = ? ORDER BY date_applied DESC, created_at DESC",
-    [userId]
-  );
+export const getJobApplicationsByUserId = async (
+  userId,
+  { status, search, sort } = {}
+) => {
+  let query =
+    "SELECT id, company, position, status, date_applied, job_url, notes, resume_path, created_at FROM job_applications WHERE user_id = ?";
+  const params = [userId];
+
+  if (status) {
+    query += " AND status = ?";
+    params.push(status);
+  }
+
+  if (search) {
+    query += " AND (company LIKE ? OR position LIKE ?)";
+    const like = `%${search}%`;
+    params.push(like, like);
+  }
+
+  const order = sort === "oldest" ? "ASC" : "DESC";
+  query += ` ORDER BY date_applied ${order}, created_at ${order}`;
+
+  const [rows] = await db.query(query, params);
 
   return rows;
 };
