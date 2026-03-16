@@ -1,10 +1,25 @@
 import React from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { getAccessToken } from "../lib/auth";
 
 const ProtectedRoute = () => {
   const location = useLocation();
   const { isAuthenticated, isAuthLoading } = useAuth();
+  const accessToken = getAccessToken();
+
+  if (!accessToken) {
+    return (
+      <Navigate
+        to="/login"
+        replace
+        state={{
+          message: "Please login to continue.",
+          from: location.pathname,
+        }}
+      />
+    );
+  }
 
   if (isAuthLoading) {
     return (
