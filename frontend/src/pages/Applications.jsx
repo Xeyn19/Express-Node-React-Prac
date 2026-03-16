@@ -11,6 +11,18 @@ const Applications = () => {
     location.state?.message || ""
   );
   const [isDeleting, setIsDeleting] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editingJobId, setEditingJobId] = useState(null);
+  const [editForm, setEditForm] = useState({
+    company: "",
+    position: "",
+    status: "Applied",
+    date_applied: "",
+    job_url: "",
+    notes: "",
+  });
+  const [editResumeFile, setEditResumeFile] = useState(null);
+  const [editResumeUrl, setEditResumeUrl] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -55,6 +67,96 @@ const Applications = () => {
     const timer = setTimeout(() => setSuccessMessage(""), 3000);
     return () => clearTimeout(timer);
   }, [successMessage]);
+
+  const openEditModal = (job) => {
+    setError("");
+    setEditingJobId(job.id);
+    setEditForm({
+      company: job.company || "",
+      position: job.position || "",
+      status: job.status || "Applied",
+      date_applied: job.date_applied || "",
+      job_url: job.job_url || "",
+      notes: job.notes || "",
+    });
+    setEditResumeFile(null);
+    setEditResumeUrl(job.resume_url || null);
+  };
+
+  const closeEditModal = () => {
+    if (isSaving) {
+      return;
+    }
+    setEditingJobId(null);
+  };
+
+  const handleEditChange = (event) => {
+    const { name, value } = event.target;
+    setEditForm((previous) => ({ ...previous, [name]: value }));
+  };
+
+  const handleEditSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+
+    if (!editForm.company.trim() || !editForm.position.trim()) {
+      setError("Company and position are required.");
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      const payload = new FormData();
+      payload.append("company", editForm.company.trim());
+      payload.append("position", editForm.position.trim());
+      payload.append("status", editForm.status);
+      payload.append("date_applied", editForm.date_applied);
+      if (editForm.job_url.trim()) {
+        payload.append("job_url", editForm.job_url.trim());
+      }
+      if (editForm.notes.trim()) {
+        payload.append("notes", editForm.notes.trim());
+      }
+      if (editResumeFile) {
+        payload.append("resume", editResumeFile);
+      }
+
+      const response = await authenticatedFetch(
+        `/api/jobs/${editingJobId}`,
+        {
+          method: "PATCH",
+          body: payload,
+        }
+      );
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(result.message || "Unable to update application.");
+      }
+
+      setJobs((previous) =>
+        previous.map((job) =>
+          job.id === editingJobId
+            ? {
+                ...job,
+                ...result.job,
+                job_url: result.job?.job_url ?? null,
+                notes: result.job?.notes ?? null,
+                resume_url: result.job?.resume_url ?? job.resume_url,
+              }
+            : job
+        )
+      );
+      setSuccessMessage("Job application updated.");
+      setEditResumeFile(null);
+      setEditResumeUrl(result.job?.resume_url ?? editResumeUrl);
+      setEditingJobId(null);
+    } catch (saveError) {
+      setError(saveError.message || "Unable to update application.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handleDelete = async (jobId) => {
     if (!jobId) {
@@ -198,7 +300,7 @@ const Applications = () => {
                           <button
                             type="button"
                             className="btn btn-ghost btn-xs"
-                            disabled
+                            onClick={() => openEditModal(job)}
                           >
                             Edit
                           </button>
@@ -220,6 +322,144 @@ const Applications = () => {
           )}
         </div>
       </div>
+
+      {editingJobId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-xl rounded-xl bg-white shadow-lg">
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+              <h3 className="text-lg font-semibold text-slate-900">
+                Edit Application
+              </h3>
+              <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={closeEditModal}
+                disabled={isSaving}
+              >
+                Close
+              </button>
+            </div>
+            <form className="space-y-4 p-6" onSubmit={handleEditSubmit}>
+              <div className="grid gap-4 md:grid-cols-2">
+                <label className="flex flex-col gap-2 text-sm text-slate-600">
+                  Company
+                  <input
+                    type="text"
+                    name="company"
+                    value={editForm.company}
+                    onChange={handleEditChange}
+                    className="input input-bordered w-full"
+                    required
+                  />
+                </label>
+                <label className="flex flex-col gap-2 text-sm text-slate-600">
+                  Position
+                  <input
+                    type="text"
+                    name="position"
+                    value={editForm.position}
+                    onChange={handleEditChange}
+                    className="input input-bordered w-full"
+                    required
+                  />
+                </label>
+                <label className="flex flex-col gap-2 text-sm text-slate-600">
+                  Status
+                  <select
+                    name="status"
+                    value={editForm.status}
+                    onChange={handleEditChange}
+                    className="select select-bordered w-full"
+                  >
+                    <option>Applied</option>
+                    <option>Interview</option>
+                    <option>Offer</option>
+                    <option>Rejected</option>
+                  </select>
+                </label>
+                <label className="flex flex-col gap-2 text-sm text-slate-600">
+                  Date Applied
+                  <input
+                    type="date"
+                    name="date_applied"
+                    value={editForm.date_applied}
+                    onChange={handleEditChange}
+                    className="input input-bordered w-full"
+                  />
+                </label>
+              </div>
+              <label className="flex flex-col gap-2 text-sm text-slate-600">
+                Job URL
+                <input
+                  type="url"
+                  name="job_url"
+                  value={editForm.job_url}
+                  onChange={handleEditChange}
+                  className="input input-bordered w-full"
+                />
+              </label>
+              <label className="flex flex-col gap-2 text-sm text-slate-600">
+                Notes
+                <textarea
+                  rows="3"
+                  name="notes"
+                  value={editForm.notes}
+                  onChange={handleEditChange}
+                  className="textarea textarea-bordered w-full"
+                />
+              </label>
+              <label className="flex flex-col gap-2 text-sm text-slate-600">
+                Resume
+                {editResumeUrl && (
+                  <a
+                    href={editResumeUrl}
+                    className="text-xs text-slate-600 underline"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    View current resume
+                  </a>
+                )}
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  className="file-input file-input-bordered w-full"
+                  onChange={(event) =>
+                    setEditResumeFile(event.target.files?.[0] || null)
+                  }
+                />
+                {editResumeFile && (
+                  <span className="text-xs text-slate-400">
+                    Selected: {editResumeFile.name}
+                  </span>
+                )}
+              </label>
+
+              {error && <div className="alert alert-error py-2">{error}</div>}
+
+              <div className="flex justify-end gap-2">
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={closeEditModal}
+                  disabled={isSaving}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className={`btn btn-primary btn-sm ${
+                    isSaving ? "btn-disabled" : ""
+                  }`}
+                  disabled={isSaving}
+                >
+                  {isSaving ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

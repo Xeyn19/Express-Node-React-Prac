@@ -4,7 +4,9 @@ import { fileURLToPath } from "url";
 import {
   createJobApplication,
   deleteJobApplicationById,
+  getJobApplicationByIdForUser,
   getJobApplicationsByUserId,
+  updateJobApplicationById,
 } from "../models/jobModel.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -159,6 +161,110 @@ export const deleteJob = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: "Unable to delete job application.",
+      error: error.message,
+    });
+  }
+};
+
+export const updateJob = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      await cleanupResume(req.file);
+      return res.status(401).json({ message: "Unauthorized." });
+    }
+
+    const jobId = Number(req.params.id);
+
+    if (!Number.isInteger(jobId) || jobId <= 0) {
+      await cleanupResume(req.file);
+      return res.status(400).json({ message: "Invalid job id." });
+    }
+
+    const {
+      company,
+      position,
+      status,
+      date_applied,
+      job_url,
+      notes,
+    } = req.body || {};
+
+    if (!company?.trim() || !position?.trim()) {
+      await cleanupResume(req.file);
+      return res
+        .status(400)
+        .json({ message: "Company and position are required." });
+    }
+
+    if (!status || !allowedStatuses.has(status)) {
+      await cleanupResume(req.file);
+      return res.status(400).json({
+        message: "Invalid status. Use Applied, Interview, Offer, or Rejected.",
+      });
+    }
+
+    if (!date_applied || !isValidDateString(date_applied)) {
+      await cleanupResume(req.file);
+      return res.status(400).json({
+        message: "Invalid date format. Use YYYY-MM-DD.",
+      });
+    }
+
+    const existingJob = await getJobApplicationByIdForUser(userId, jobId);
+
+    if (!existingJob) {
+      await cleanupResume(req.file);
+      return res.status(404).json({ message: "Job application not found." });
+    }
+
+    const resumePath = req.file
+      ? `/uploads/resumes/${req.file.filename}`
+      : existingJob.resume_path;
+
+    const affectedRows = await updateJobApplicationById({
+      userId,
+      jobId,
+      company: company.trim(),
+      position: position.trim(),
+      status,
+      dateApplied: date_applied,
+      jobUrl: job_url?.trim() || null,
+      notes: notes?.trim() || null,
+      resumePath,
+    });
+
+    if (!affectedRows) {
+      await cleanupResume(req.file);
+      return res.status(404).json({ message: "Job application not found." });
+    }
+
+    if (req.file && existingJob.resume_path) {
+      const oldFilename = path.basename(existingJob.resume_path);
+      await cleanupResume({ filename: oldFilename });
+    }
+
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+    return res.status(200).json({
+      message: "Job application updated.",
+      job: {
+        id: jobId,
+        company: company.trim(),
+        position: position.trim(),
+        status,
+        date_applied,
+        job_url: job_url?.trim() || null,
+        notes: notes?.trim() || null,
+        resume_path: resumePath,
+        resume_url: resumePath ? `${baseUrl}${resumePath}` : null,
+      },
+    });
+  } catch (error) {
+    await cleanupResume(req.file);
+    return res.status(500).json({
+      message: "Unable to update job application.",
       error: error.message,
     });
   }
