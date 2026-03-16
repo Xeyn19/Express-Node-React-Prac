@@ -1,21 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { authenticatedFetch } from "../lib/api";
+import { toastError, toastSuccess } from "../lib/toast";
 
 const Applications = () => {
-  const location = useLocation();
   const [jobs, setJobs] = useState([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [successMessage, setSuccessMessage] = useState(
-    location.state?.message || ""
-  );
   const [isDeleting, setIsDeleting] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
   const [dateSort, setDateSort] = useState("newest");
   const [editingJobId, setEditingJobId] = useState(null);
+  const [editErrors, setEditErrors] = useState({});
   const [editForm, setEditForm] = useState({
     company: "",
     position: "",
@@ -35,18 +33,19 @@ const Applications = () => {
         setIsLoading(true);
         setError("");
         const response = await authenticatedFetch("/api/jobs");
-        const result = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-          throw new Error(result.message || "Unable to load applications.");
-        }
+        const result = response.data || {};
 
         if (isMounted) {
           setJobs(result.jobs || []);
         }
       } catch (fetchError) {
         if (isMounted) {
-          setError(fetchError.message || "Unable to load applications.");
+          const message =
+            fetchError?.response?.data?.message ||
+            fetchError.message ||
+            "Unable to load applications.";
+          setError(message);
+          toastError(message);
         }
       } finally {
         if (isMounted) {
@@ -62,14 +61,6 @@ const Applications = () => {
     };
   }, []);
 
-  useEffect(() => {
-    if (!successMessage) {
-      return undefined;
-    }
-
-    const timer = setTimeout(() => setSuccessMessage(""), 3000);
-    return () => clearTimeout(timer);
-  }, [successMessage]);
 
   const normalizedSearch = searchTerm.trim().toLowerCase();
   const filteredJobs = jobs
@@ -100,6 +91,7 @@ const Applications = () => {
 
   const openEditModal = (job) => {
     setError("");
+    setEditErrors({});
     setEditingJobId(job.id);
     setEditForm({
       company: job.company || "",
@@ -123,14 +115,29 @@ const Applications = () => {
   const handleEditChange = (event) => {
     const { name, value } = event.target;
     setEditForm((previous) => ({ ...previous, [name]: value }));
+    if (editErrors[name]) {
+      setEditErrors((previous) => ({ ...previous, [name]: "" }));
+    }
   };
 
   const handleEditSubmit = async (event) => {
     event.preventDefault();
     setError("");
+    const validationErrors = {};
 
-    if (!editForm.company.trim() || !editForm.position.trim()) {
-      setError("Company and position are required.");
+    if (!editForm.company.trim()) {
+      validationErrors.company = "Company is required.";
+    }
+    if (!editForm.position.trim()) {
+      validationErrors.position = "Position is required.";
+    }
+    if (!editForm.date_applied) {
+      validationErrors.date_applied = "Date applied is required.";
+    }
+
+    setEditErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length > 0) {
       return;
     }
 
@@ -155,14 +162,10 @@ const Applications = () => {
         `/api/jobs/${editingJobId}`,
         {
           method: "PATCH",
-          body: payload,
+          data: payload,
         }
       );
-      const result = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        throw new Error(result.message || "Unable to update application.");
-      }
+      const result = response.data || {};
 
       setJobs((previous) =>
         previous.map((job) =>
@@ -177,12 +180,17 @@ const Applications = () => {
             : job
         )
       );
-      setSuccessMessage("Job application updated.");
+      toastSuccess("Application updated");
       setEditResumeFile(null);
       setEditResumeUrl(result.job?.resume_url ?? editResumeUrl);
       setEditingJobId(null);
     } catch (saveError) {
-      setError(saveError.message || "Unable to update application.");
+      const message =
+        saveError?.response?.data?.message ||
+        saveError.message ||
+        "Unable to update application.";
+      setError(message);
+      toastError(message);
     } finally {
       setIsSaving(false);
     }
@@ -205,16 +213,16 @@ const Applications = () => {
       const response = await authenticatedFetch(`/api/jobs/${jobId}`, {
         method: "DELETE",
       });
-      const result = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        throw new Error(result.message || "Unable to delete application.");
-      }
 
       setJobs((previous) => previous.filter((job) => job.id !== jobId));
-      setSuccessMessage("Job application deleted.");
+      toastSuccess("Deleted");
     } catch (deleteError) {
-      setError(deleteError.message || "Unable to delete application.");
+      const message =
+        deleteError?.response?.data?.message ||
+        deleteError.message ||
+        "Unable to delete application.";
+      setError(message);
+      toastError(message);
     } finally {
       setIsDeleting(null);
     }
@@ -292,23 +300,68 @@ const Applications = () => {
             </label>
           </div>
 
-          {successMessage && (
-            <div className="alert alert-success py-2">{successMessage}</div>
-          )}
-          {error && <div className="alert alert-error py-2">{error}</div>}
+          {error && <div className="sr-only">{error}</div>}
           {isLoading && (
-            <div className="text-sm text-slate-500">Loading applications...</div>
+            <div className="flex items-center gap-2 text-sm text-slate-500">
+              <span className="loading loading-spinner loading-sm" />
+              Loading applications...
+            </div>
           )}
 
           {!isLoading && !jobs.length && !error && (
             <div className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
-              Your application list will show up here once you add new jobs.
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  className="h-6 w-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 6v12m6-6H6"
+                  />
+                </svg>
+              </div>
+              <p className="font-medium text-slate-700">
+                No applications yet.
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                Add your first application to start tracking your progress.
+              </p>
+              <Link to="/add-job" className="btn btn-primary btn-sm mt-4">
+                Add your first application
+              </Link>
             </div>
           )}
 
           {!isLoading && jobs.length > 0 && filteredJobs.length === 0 && (
             <div className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
-              No applications match your search and filters.
+              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  className="h-6 w-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3.75 4.5h16.5m-16.5 7.5h16.5m-16.5 7.5h10.5"
+                  />
+                </svg>
+              </div>
+              <p className="font-medium text-slate-700">
+                No applications match your filters.
+              </p>
+              <p className="mt-1 text-xs text-slate-500">
+                Try a different search or reset the status filter.
+              </p>
             </div>
           )}
 
@@ -368,7 +421,7 @@ const Applications = () => {
                             View
                           </a>
                         ) : (
-                          "—"
+                          "--"
                         )}
                       </td>
                       <td className="px-4 py-3 text-slate-500">
@@ -424,9 +477,16 @@ const Applications = () => {
                     name="company"
                     value={editForm.company}
                     onChange={handleEditChange}
-                    className="input input-bordered w-full"
+                    className={`input input-bordered w-full ${
+                      editErrors.company ? "input-error" : ""
+                    }`}
                     required
                   />
+                  {editErrors.company && (
+                    <span className="text-xs text-rose-600">
+                      {editErrors.company}
+                    </span>
+                  )}
                 </label>
                 <label className="flex flex-col gap-2 text-sm text-slate-600">
                   Position
@@ -435,9 +495,16 @@ const Applications = () => {
                     name="position"
                     value={editForm.position}
                     onChange={handleEditChange}
-                    className="input input-bordered w-full"
+                    className={`input input-bordered w-full ${
+                      editErrors.position ? "input-error" : ""
+                    }`}
                     required
                   />
+                  {editErrors.position && (
+                    <span className="text-xs text-rose-600">
+                      {editErrors.position}
+                    </span>
+                  )}
                 </label>
                 <label className="flex flex-col gap-2 text-sm text-slate-600">
                   Status
@@ -460,8 +527,15 @@ const Applications = () => {
                     name="date_applied"
                     value={editForm.date_applied}
                     onChange={handleEditChange}
-                    className="input input-bordered w-full"
+                    className={`input input-bordered w-full ${
+                      editErrors.date_applied ? "input-error" : ""
+                    }`}
                   />
+                  {editErrors.date_applied && (
+                    <span className="text-xs text-rose-600">
+                      {editErrors.date_applied}
+                    </span>
+                  )}
                 </label>
               </div>
               <label className="flex flex-col gap-2 text-sm text-slate-600">
@@ -511,7 +585,7 @@ const Applications = () => {
                 )}
               </label>
 
-              {error && <div className="alert alert-error py-2">{error}</div>}
+              {error && <div className="sr-only">{error}</div>}
 
               <div className="flex justify-end gap-2">
                 <button

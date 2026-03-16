@@ -1,86 +1,59 @@
-import {
-  clearAuthSession,
-  getAccessToken,
-  getRefreshToken,
-  updateAccessToken,
-} from "./auth";
+import axios from "axios";
+import { clearAuthSession, getAccessToken } from "./auth";
 
 export const apiBaseUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
-const buildUrl = (path) =>
-  path.startsWith("http") ? path : `${apiBaseUrl}${path}`;
-
-const withJsonHeaders = (headers = {}) => ({
-  "Content-Type": "application/json",
-  ...headers,
+const api = axios.create({
+  baseURL: apiBaseUrl,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-export const apiFetch = (path, options = {}) =>
-  fetch(buildUrl(path), {
-    ...options,
-    headers: withJsonHeaders(options.headers),
-  });
-
-const buildRequestHeaders = (options = {}) => {
-  const isFormData =
-    typeof FormData !== "undefined" && options.body instanceof FormData;
-
-  if (isFormData) {
-    return options.headers || {};
+const redirectToLogin = () => {
+  clearAuthSession();
+  if (typeof window !== "undefined") {
+    window.location.href = "/login";
   }
-
-  return withJsonHeaders(options.headers);
 };
 
-const requestNewAccessToken = async () => {
-  const refreshToken = getRefreshToken();
-
-  if (!refreshToken) {
-    clearAuthSession();
-    return null;
-  }
-
-  const response = await apiFetch("/api/auth/refresh", {
-    method: "POST",
-    body: JSON.stringify({ refreshToken }),
-  });
-
-  const result = await response.json().catch(() => ({}));
-
-  if (!response.ok || !result.accessToken) {
-    clearAuthSession();
-    return null;
-  }
-
-  updateAccessToken(result.accessToken);
-  return result.accessToken;
-};
-
-export const authenticatedFetch = async (path, options = {}) => {
+api.interceptors.request.use((config) => {
   const accessToken = getAccessToken();
-  const response = await fetch(buildUrl(path), {
-    ...options,
-    headers: {
-      ...buildRequestHeaders(options),
-      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-    },
-  });
-
-  if (response.status !== 401) {
-    return response;
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
   }
 
-  const newAccessToken = await requestNewAccessToken();
-
-  if (!newAccessToken) {
-    return response;
+  if (config.data instanceof FormData) {
+    delete config.headers["Content-Type"];
   }
 
-  return fetch(buildUrl(path), {
-    ...options,
-    headers: {
-      ...buildRequestHeaders(options),
-      Authorization: `Bearer ${newAccessToken}`,
-    },
+  return config;
+});
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const { response, config } = error || {};
+
+    if (!response || response.status !== 401 || !config) {
+      return Promise.reject(error);
+    }
+
+    redirectToLogin();
+    return Promise.reject(error);
+  }
+);
+
+export const apiFetch = (path, options = {}) =>
+  api({
+    url: path,
+    method: options.method || "GET",
+    data: options.data,
   });
-};
+
+export const authenticatedFetch = (path, options = {}) =>
+  api({
+    url: path,
+    method: options.method || "GET",
+    data: options.data,
+  });

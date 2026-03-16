@@ -32,7 +32,7 @@ export const getJobApplicationsByUserId = async (
   { status, search, sort } = {}
 ) => {
   let query =
-    "SELECT id, company, position, status, date_applied, job_url, notes, resume_path, created_at FROM job_applications WHERE user_id = ?";
+    "SELECT id, company, position, status, DATE_FORMAT(date_applied, '%Y-%m-%d') AS date_applied, job_url, notes, resume_path, created_at FROM job_applications WHERE user_id = ?";
   const params = [userId];
 
   if (status) {

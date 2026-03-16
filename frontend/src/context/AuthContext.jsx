@@ -32,9 +32,9 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const response = await authenticatedFetch("/api/auth/me");
-      const result = await response.json().catch(() => ({}));
+      const result = response.data || {};
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         clearAuthSession();
         setUser(null);
         return null;

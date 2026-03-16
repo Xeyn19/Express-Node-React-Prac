@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../lib/api";
+import { toastError, toastSuccess } from "../lib/toast";
 
 const EyeIcon = () => (
   <svg
@@ -56,7 +57,6 @@ const Register = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState(initialFormData);
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -71,19 +71,22 @@ const Register = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
-    setSuccessMessage("");
 
     const hasEmptyField = Object.values(formData).some(
       (value) => value.trim() === ""
     );
 
     if (hasEmptyField) {
-      setError("Please fill in all fields.");
+      const message = "Please fill in all fields.";
+      setError(message);
+      toastError(message);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Password and Confirm Password do not match.");
+      const message = "Password and Confirm Password do not match.";
+      setError(message);
+      toastError(message);
       return;
     }
 
@@ -92,25 +95,20 @@ const Register = () => {
 
       const response = await apiFetch("/api/register", {
         method: "POST",
-        body: JSON.stringify({
+        data: {
           firstName: formData.firstName.trim(),
           lastName: formData.lastName.trim(),
           email: formData.email.trim(),
           password: formData.password,
-        }),
+        },
       });
 
-      const result = await response.json();
+      const result = response.data || {};
 
-      if (!response.ok) {
-        setError(result.message || "Registration failed.");
-        return;
-      }
-
-      setSuccessMessage(result.message || "Registration successful.");
+      const message = result.message || "Registration successful.";
+      toastSuccess("Registration successful.");
       setFormData(initialFormData);
       setTimeout(() => {
-        alert('Redirecting to Login!')
         navigate("/login", {
         replace: true,
         state: {
@@ -120,8 +118,12 @@ const Register = () => {
       }, 3000);
       })
       
-    } catch {
-      setError("Unable to connect to server.");
+    } catch (registerError) {
+      const message =
+        registerError?.response?.data?.message ||
+        "Unable to connect to server.";
+      setError(message);
+      toastError(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -222,10 +224,7 @@ const Register = () => {
               </div>
             </label>
 
-            {error && <div className="alert alert-error py-2 mt-3">{error}</div>}
-            {successMessage && (
-              <div className="alert alert-success py-2 mt-3">{successMessage}</div>
-            )}
+            {error && <div className="sr-only">{error}</div>}
 
             <button
               type="submit"

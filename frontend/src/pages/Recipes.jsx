@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { authenticatedFetch } from "../lib/api";
+import { toastError } from "../lib/toast";
 import { useAuth } from "../context/AuthContext";
 
 const Recipes = () => {
@@ -23,9 +24,9 @@ const Recipes = () => {
       setIsLoading(true);
       setError("");
       const response = await authenticatedFetch("/api/recipes");
-      const data = await response.json().catch(() => []);
+      const data = response.data || [];
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         if (response.status === 401) {
           logout();
           navigate("/login", {
@@ -40,7 +41,12 @@ const Recipes = () => {
 
       setRecipes(data);
     } catch (fetchError) {
-      setError(fetchError.message || "Unable to fetch recipes.");
+      const message =
+        fetchError?.response?.data?.message ||
+        fetchError.message ||
+        "Unable to fetch recipes.";
+      setError(message);
+      toastError(message);
     } finally {
       setIsLoading(false);
     }
@@ -77,7 +83,7 @@ const Recipes = () => {
         </div>
 
         {isLoading && <p className="mb-4">Loading recipes...</p>}
-        {error && <div className="alert alert-error mb-4">{error}</div>}
+        {error && <div className="sr-only">{error}</div>}
 
         <ul>
           {recipes.map((recipe) => (

@@ -14,7 +14,7 @@ export const getDashboardStatsForUser = async (userId) => {
   );
 
   const [recentJobs] = await db.query(
-    "SELECT id, company, position, status, date_applied FROM job_applications WHERE user_id = ? ORDER BY date_applied DESC, created_at DESC LIMIT 5",
+    "SELECT id, company, position, status, DATE_FORMAT(date_applied, '%Y-%m-%d') AS date_applied FROM job_applications WHERE user_id = ? ORDER BY date_applied DESC, created_at DESC LIMIT 5",
     [userId]
   );
 

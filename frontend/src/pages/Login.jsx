@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { apiFetch } from "../lib/api";
+import { toastError, toastInfo, toastSuccess } from "../lib/toast";
 import { getAccessToken } from "../lib/auth";
 import { useAuth } from "../context/AuthContext";
 
@@ -53,15 +54,13 @@ const initialLoginData = {
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const lastToastKeyRef = useRef(null);
   const { login } = useAuth();
   const [loginData, setLoginData] = useState({
     ...initialLoginData,
     email: location.state?.email || "",
   });
   const [error, setError] = useState("");
-  const [successMessage, setSuccessMessage] = useState(
-    location.state?.message || ""
-  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -70,6 +69,29 @@ const Login = () => {
       navigate("/dashboard", { replace: true });
     }
   }, [navigate]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    if (lastToastKeyRef.current === location.key) {
+      return;
+    }
+
+    const logoutToast = sessionStorage.getItem("logoutToast");
+    if (logoutToast) {
+      sessionStorage.removeItem("logoutToast");
+      toastSuccess("Logged out successfully.");
+      lastToastKeyRef.current = location.key;
+      return;
+    }
+
+    if (location.state?.message) {
+      toastInfo(location.state.message);
+      lastToastKeyRef.current = location.key;
+    }
+  }, [location.key, location.state?.message]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -82,10 +104,11 @@ const Login = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
-    setSuccessMessage("");
 
     if (!loginData.email.trim() || !loginData.password.trim()) {
-      setError("Please enter both email and password.");
+      const message = "Please enter both email and password.";
+      setError(message);
+      toastError(message);
       return;
     }
 
@@ -93,20 +116,16 @@ const Login = () => {
       setIsSubmitting(true);
       const response = await apiFetch("/api/login", {
         method: "POST",
-        body: JSON.stringify({
+        data: {
           email: loginData.email.trim(),
           password: loginData.password,
-        }),
+        },
       });
+      const result = response.data || {};
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        setError(result.message || "Login failed.");
-        return;
-      }
-
-      setSuccessMessage(result.message || "Login successful.");
+      const message = result.message || "Login successful.";
+      setError("");
+      toastSuccess(message);
       login({
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
@@ -117,8 +136,11 @@ const Login = () => {
         replace: true,
         state: { user: result.user },
       });
-    } catch {
-      setError("Unable to connect to server.");
+    } catch (loginError) {
+      const message =
+        loginError?.response?.data?.message || "Unable to connect to server.";
+      setError(message);
+      toastError(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -165,10 +187,7 @@ const Login = () => {
               </div>
             </label>
 
-            {error && <div className="alert alert-error py-2 mt-3">{error}</div>}
-            {successMessage && (
-              <div className="alert alert-success py-2 mt-3">{successMessage}</div>
-            )}
+            {error && <div className="sr-only">{error}</div>}
 
             <button
               type="submit"

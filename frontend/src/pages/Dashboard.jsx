@@ -8,7 +8,9 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { Link } from "react-router-dom";
 import { authenticatedFetch } from "../lib/api";
+import { toastError } from "../lib/toast";
 
 const statusBadge = (status) => {
   switch (status) {
@@ -46,11 +48,7 @@ const Dashboard = () => {
         setIsLoading(true);
         setError("");
         const response = await authenticatedFetch("/api/dashboard/stats");
-        const result = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-          throw new Error(result.message || "Unable to load dashboard.");
-        }
+        const result = response.data || {};
 
         if (isMounted) {
           setStats({
@@ -67,7 +65,12 @@ const Dashboard = () => {
         }
       } catch (fetchError) {
         if (isMounted) {
-          setError(fetchError.message || "Unable to load dashboard.");
+          const message =
+            fetchError?.response?.data?.message ||
+            fetchError.message ||
+            "Unable to load dashboard.";
+          setError(message);
+          toastError(message);
         }
       } finally {
         if (isMounted) {
@@ -141,9 +144,39 @@ const Dashboard = () => {
         </div>
       ) : (
         <>
-          {error && <div className="alert alert-error py-2">{error}</div>}
+          {error && <div className="sr-only">{error}</div>}
 
-          {!error && (
+          {!error && stats.total === 0 && (
+            <div className="rounded-xl border border-dashed border-slate-200 bg-white p-10 text-center shadow-sm">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  className="h-6 w-6"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 6v12m6-6H6"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-slate-900">
+                No applications yet
+              </h3>
+              <p className="mt-1 text-sm text-slate-500">
+                Start by adding your first job application to track progress.
+              </p>
+              <Link to="/add-job" className="btn btn-primary btn-sm mt-4">
+                Add your first application
+              </Link>
+            </div>
+          )}
+
+          {!error && stats.total > 0 && (
             <>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                 {cards.map((stat) => (
@@ -230,39 +263,28 @@ const Dashboard = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {stats.recentJobs.length === 0 ? (
-                        <tr>
-                          <td
-                            className="px-6 py-4 text-slate-500"
-                            colSpan={4}
-                          >
-                            No applications yet.
+                      {stats.recentJobs.map((application) => (
+                        <tr key={application.id}>
+                          <td className="px-6 py-4 font-medium text-slate-800">
+                            {application.position}
+                          </td>
+                          <td className="px-6 py-4 text-slate-600">
+                            {application.company}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span
+                              className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${statusBadge(
+                                application.status
+                              )}`}
+                            >
+                              {application.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-slate-500">
+                            {application.date_applied}
                           </td>
                         </tr>
-                      ) : (
-                        stats.recentJobs.map((application) => (
-                          <tr key={application.id}>
-                            <td className="px-6 py-4 font-medium text-slate-800">
-                              {application.position}
-                            </td>
-                            <td className="px-6 py-4 text-slate-600">
-                              {application.company}
-                            </td>
-                            <td className="px-6 py-4">
-                              <span
-                                className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${statusBadge(
-                                  application.status
-                                )}`}
-                              >
-                                {application.status}
-                              </span>
-                            </td>
-                            <td className="px-6 py-4 text-slate-500">
-                              {application.date_applied}
-                            </td>
-                          </tr>
-                        ))
-                      )}
+                      ))}
                     </tbody>
                   </table>
                 </div>

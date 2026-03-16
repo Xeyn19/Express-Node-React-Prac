@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authenticatedFetch } from "../lib/api";
+import { toastError, toastSuccess } from "../lib/toast";
 
 const todayString = () => new Date().toISOString().slice(0, 10);
 
@@ -16,19 +17,35 @@ const AddJob = () => {
   });
   const [resumeFile, setResumeFile] = useState(null);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((previous) => ({ ...previous, [name]: value }));
+    if (fieldErrors[name]) {
+      setFieldErrors((previous) => ({ ...previous, [name]: "" }));
+    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
+    const validationErrors = {};
 
-    if (!formData.company.trim() || !formData.position.trim()) {
-      setError("Company name and job title are required.");
+    if (!formData.company.trim()) {
+      validationErrors.company = "Company name is required.";
+    }
+    if (!formData.position.trim()) {
+      validationErrors.position = "Job title is required.";
+    }
+    if (!formData.date_applied) {
+      validationErrors.date_applied = "Date applied is required.";
+    }
+
+    setFieldErrors(validationErrors);
+
+    if (Object.keys(validationErrors).length > 0) {
       return;
     }
 
@@ -49,24 +66,17 @@ const AddJob = () => {
         payload.append("resume", resumeFile);
       }
 
-      const response = await authenticatedFetch("/api/jobs", {
+      await authenticatedFetch("/api/jobs", {
         method: "POST",
-        body: payload,
+        data: payload,
       });
-
-      const result = await response.json().catch(() => ({}));
-
-      if (!response.ok) {
-        setError(result.message || "Unable to save job application.");
-        return;
-      }
-
-      navigate("/applications", {
-        replace: true,
-        state: { message: "Job application added." },
-      });
-    } catch {
-      setError("Unable to connect to server.");
+      toastSuccess("Job added!");
+      navigate("/applications", { replace: true });
+    } catch (saveError) {
+      const message =
+        saveError?.response?.data?.message || "Unable to connect to server.";
+      setError(message);
+      toastError(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -93,9 +103,16 @@ const AddJob = () => {
               value={formData.company}
               onChange={handleChange}
               placeholder="Company name"
-              className="input input-bordered w-full"
+              className={`input input-bordered w-full ${
+                fieldErrors.company ? "input-error" : ""
+              }`}
               required
             />
+            {fieldErrors.company && (
+              <span className="text-xs text-rose-600">
+                {fieldErrors.company}
+              </span>
+            )}
           </label>
 
           <label className="flex flex-col gap-2 text-sm text-slate-600">
@@ -106,9 +123,16 @@ const AddJob = () => {
               value={formData.position}
               onChange={handleChange}
               placeholder="Frontend Developer"
-              className="input input-bordered w-full"
+              className={`input input-bordered w-full ${
+                fieldErrors.position ? "input-error" : ""
+              }`}
               required
             />
+            {fieldErrors.position && (
+              <span className="text-xs text-rose-600">
+                {fieldErrors.position}
+              </span>
+            )}
           </label>
 
           <label className="flex flex-col gap-2 text-sm text-slate-600">
@@ -133,8 +157,15 @@ const AddJob = () => {
               name="date_applied"
               value={formData.date_applied}
               onChange={handleChange}
-              className="input input-bordered w-full"
+              className={`input input-bordered w-full ${
+                fieldErrors.date_applied ? "input-error" : ""
+              }`}
             />
+            {fieldErrors.date_applied && (
+              <span className="text-xs text-rose-600">
+                {fieldErrors.date_applied}
+              </span>
+            )}
           </label>
 
           <label className="flex flex-col gap-2 text-sm text-slate-600 md:col-span-2">
@@ -179,9 +210,7 @@ const AddJob = () => {
           </label>
 
           {error && (
-            <div className="md:col-span-2 alert alert-error py-2">
-              {error}
-            </div>
+            <div className="md:col-span-2 sr-only">{error}</div>
           )}
 
           <div className="md:col-span-2 flex justify-end">
