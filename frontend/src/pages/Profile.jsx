@@ -1,12 +1,95 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { authenticatedFetch } from "../lib/api";
+import { toastError, toastSuccess } from "../lib/toast";
 
 const Profile = () => {
   const { user } = useAuth();
+  const [profile, setProfile] = useState({
+    preferred_role: "",
+    target_location: "",
+  });
+  const [hasProfile, setHasProfile] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
 
   const fullName = user
     ? `${user.first_name || user.firstName || ""} ${user.last_name || user.lastName || ""}`.trim()
     : "";
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProfile = async () => {
+      try {
+        setIsLoading(true);
+        const response = await authenticatedFetch("/api/profile");
+        const result = response.data || {};
+
+        if (isMounted) {
+          setProfile({
+            preferred_role: result.profile?.preferred_role || "",
+            target_location: result.profile?.target_location || "",
+          });
+          setHasProfile(Boolean(result.has_profile));
+          setIsEditing(!result.has_profile);
+        }
+      } catch (fetchError) {
+        const message =
+          fetchError?.response?.data?.message ||
+          fetchError.message ||
+          "Unable to load profile.";
+        toastError(message);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadProfile();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setProfile((previous) => ({ ...previous, [name]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+      setIsSaving(true);
+      const response = await authenticatedFetch("/api/profile", {
+        method: "PUT",
+        data: {
+          preferred_role: profile.preferred_role.trim() || null,
+          target_location: profile.target_location.trim() || null,
+        },
+      });
+      const result = response.data || {};
+      setProfile({
+        preferred_role: result.profile?.preferred_role || "",
+        target_location: result.profile?.target_location || "",
+      });
+      setHasProfile(true);
+      setIsEditing(false);
+      toastSuccess("Profile updated");
+    } catch (saveError) {
+      const message =
+        saveError?.response?.data?.message ||
+        saveError.message ||
+        "Unable to update profile.";
+      toastError(message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -33,20 +116,82 @@ const Profile = () => {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-lg border border-slate-200 p-4">
-            <p className="text-sm text-slate-500">Preferred role</p>
-            <p className="text-base font-semibold text-slate-900">
-              Full-Stack Developer
-            </p>
+        {isEditing ? (
+          <form
+            className="mt-6 grid gap-4 sm:grid-cols-2"
+            onSubmit={handleSubmit}
+          >
+            <label className="flex flex-col gap-2 text-sm text-slate-600">
+              Preferred role
+              <input
+                type="text"
+                name="preferred_role"
+                value={profile.preferred_role}
+                onChange={handleChange}
+                className="input input-bordered w-full"
+                placeholder="Frontend Engineer"
+                disabled={isLoading}
+              />
+            </label>
+            <label className="flex flex-col gap-2 text-sm text-slate-600">
+              Target location
+              <input
+                type="text"
+                name="target_location"
+                value={profile.target_location}
+                onChange={handleChange}
+                className="input input-bordered w-full"
+                placeholder="Remote / Hybrid"
+                disabled={isLoading}
+              />
+            </label>
+            <div className="sm:col-span-2 flex justify-end gap-2">
+              {hasProfile && (
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => setIsEditing(false)}
+                  disabled={isSaving}
+                >
+                  Cancel
+                </button>
+              )}
+              <button
+                type="submit"
+                className={`btn btn-primary btn-sm ${
+                  isSaving ? "btn-disabled" : ""
+                }`}
+                disabled={isSaving || isLoading}
+              >
+                {isSaving ? "Saving..." : "Save Profile"}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="rounded-lg border border-slate-200 p-4">
+              <p className="text-sm text-slate-500">Preferred role</p>
+              <p className="text-base font-semibold text-slate-900">
+                {profile.preferred_role || "Not set"}
+              </p>
+            </div>
+            <div className="rounded-lg border border-slate-200 p-4">
+              <p className="text-sm text-slate-500">Target location</p>
+              <p className="text-base font-semibold text-slate-900">
+                {profile.target_location || "Not set"}
+              </p>
+            </div>
+            <div className="sm:col-span-2 flex justify-end">
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={() => setIsEditing(true)}
+              >
+                Edit Profile
+              </button>
+            </div>
           </div>
-          <div className="rounded-lg border border-slate-200 p-4">
-            <p className="text-sm text-slate-500">Target location</p>
-            <p className="text-base font-semibold text-slate-900">
-              Remote / Hybrid
-            </p>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
