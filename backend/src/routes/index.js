@@ -4,6 +4,7 @@ import authRouter from "./authRoutes.js";
 import registerRouter from "./registerRoute.js";
 import loginRouter from "./loginRoutes.js";
 import jobRouter from "./jobRoutes.js";
+import dashboardRouter from "./dashboardRoutes.js";
 
 const router = express.Router();
 
@@ -12,5 +13,6 @@ router.use("/auth", authRouter);
 router.use("/register", registerRouter);
 router.use("/login", loginRouter);
 router.use("/jobs", jobRouter);
+router.use("/dashboard", dashboardRouter);
 
 export default router;
