@@ -21,6 +21,17 @@ export const apiFetch = (path, options = {}) =>
     headers: withJsonHeaders(options.headers),
   });
 
+const buildRequestHeaders = (options = {}) => {
+  const isFormData =
+    typeof FormData !== "undefined" && options.body instanceof FormData;
+
+  if (isFormData) {
+    return options.headers || {};
+  }
+
+  return withJsonHeaders(options.headers);
+};
+
 const requestNewAccessToken = async () => {
   const refreshToken = getRefreshToken();
 
@@ -50,7 +61,7 @@ export const authenticatedFetch = async (path, options = {}) => {
   const response = await fetch(buildUrl(path), {
     ...options,
     headers: {
-      ...withJsonHeaders(options.headers),
+      ...buildRequestHeaders(options),
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     },
   });
@@ -68,7 +79,7 @@ export const authenticatedFetch = async (path, options = {}) => {
   return fetch(buildUrl(path), {
     ...options,
     headers: {
-      ...withJsonHeaders(options.headers),
+      ...buildRequestHeaders(options),
       Authorization: `Bearer ${newAccessToken}`,
     },
   });
