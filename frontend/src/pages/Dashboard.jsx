@@ -12,16 +12,16 @@ import { Link } from "react-router-dom";
 import { authenticatedFetch } from "../lib/api";
 import { toastError } from "../lib/toast";
 
-const statusBadge = (status) => {
+const statusClass = (status) => {
   switch (status) {
     case "Interview":
-      return "bg-blue-100 text-blue-700";
+      return "interview";
     case "Offer":
-      return "bg-emerald-100 text-emerald-700";
+      return "offer";
     case "Rejected":
-      return "bg-rose-100 text-rose-700";
+      return "rejected";
     default:
-      return "bg-amber-100 text-amber-700";
+      return "applied";
   }
 };
 
@@ -94,18 +94,26 @@ const Dashboard = () => {
   ];
 
   const cards = [
-    { label: "Total Applications", value: stats.total },
-    { label: "Interviews", value: stats.byStatus.Interview || 0 },
-    { label: "Offers", value: stats.byStatus.Offer || 0 },
-    { label: "Rejected", value: stats.byStatus.Rejected || 0 },
-    { label: "Success Rate", value: `${stats.successRate}%` },
+    { label: "Total Applications", value: stats.total, tone: "total" },
+    {
+      label: "Interviews",
+      value: stats.byStatus.Interview || 0,
+      tone: "interview",
+    },
+    { label: "Offers", value: stats.byStatus.Offer || 0, tone: "offer" },
+    {
+      label: "Rejected",
+      value: stats.byStatus.Rejected || 0,
+      tone: "rejected",
+    },
+    { label: "Success Rate", value: `${stats.successRate}%`, tone: "total" },
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="page-title">Dashboard</h1>
+        <p className="page-subtitle">
           Monitor your pipeline and stay on top of every application.
         </p>
       </div>
@@ -116,29 +124,29 @@ const Dashboard = () => {
             {Array.from({ length: 5 }).map((_, index) => (
               <div
                 key={`card-skeleton-${index}`}
-                className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+                className="skeleton-panel p-5"
               >
-                <div className="h-3 w-24 rounded bg-slate-200" />
-                <div className="mt-4 h-7 w-16 rounded bg-slate-200" />
+                <div className="h-3 w-24 skeleton-line" />
+                <div className="mt-4 h-7 w-16 skeleton-line" />
               </div>
             ))}
           </div>
           <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-              <div className="h-4 w-40 rounded bg-slate-200" />
-              <div className="mt-4 h-64 rounded bg-slate-100" />
+            <div className="lg:col-span-2 skeleton-panel p-6">
+              <div className="h-4 w-40 skeleton-line" />
+              <div className="mt-4 h-64 skeleton-line" />
             </div>
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-              <div className="h-4 w-32 rounded bg-slate-200" />
-              <div className="mt-4 h-40 rounded bg-slate-100" />
+            <div className="skeleton-panel p-6">
+              <div className="h-4 w-32 skeleton-line" />
+              <div className="mt-4 h-40 skeleton-line" />
             </div>
           </div>
-          <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="border-b border-slate-200 px-6 py-4">
-              <div className="h-4 w-40 rounded bg-slate-200" />
+          <div className="skeleton-panel">
+            <div className="app-divider px-6 py-4">
+              <div className="h-4 w-40 skeleton-line" />
             </div>
             <div className="p-6">
-              <div className="h-32 rounded bg-slate-100" />
+              <div className="h-32 skeleton-line" />
             </div>
           </div>
         </div>
@@ -147,8 +155,8 @@ const Dashboard = () => {
           {error && <div className="sr-only">{error}</div>}
 
           {!error && stats.total === 0 && (
-            <div className="rounded-xl border border-dashed border-slate-200 bg-white p-10 text-center shadow-sm">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+            <div className="surface p-10 text-center">
+              <div className="mx-auto mb-4 empty-icon">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -164,10 +172,8 @@ const Dashboard = () => {
                   />
                 </svg>
               </div>
-              <h3 className="text-lg font-semibold text-slate-900">
-                No applications yet
-              </h3>
-              <p className="mt-1 text-sm text-slate-500">
+              <h3 className="page-title">No applications yet</h3>
+              <p className="page-subtitle mt-1">
                 Start by adding your first job application to track progress.
               </p>
               <Link to="/add-job" className="btn btn-primary btn-sm mt-4">
@@ -182,10 +188,25 @@ const Dashboard = () => {
                 {cards.map((stat) => (
                   <div
                     key={stat.label}
-                    className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
+                    className="surface stat-card"
                   >
-                    <p className="text-sm text-slate-500">{stat.label}</p>
-                    <p className="mt-2 text-2xl font-semibold text-slate-900">
+                    {stat.tone !== "total" && (
+                      <span
+                        className={`stat-strip strip-${stat.tone}`}
+                        aria-hidden="true"
+                      />
+                    )}
+                    <p className="stat-label">{stat.label}</p>
+                    <p
+                      className={[
+                        "mt-2 stat-value",
+                        stat.tone === "interview" && "interview",
+                        stat.tone === "offer" && "offer",
+                        stat.tone === "rejected" && "rejected",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                    >
                       {stat.value}
                     </p>
                   </div>
@@ -193,26 +214,29 @@ const Dashboard = () => {
               </div>
 
               <div className="grid gap-6 lg:grid-cols-3">
-                <div className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div className="lg:col-span-2 surface p-6">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-semibold text-slate-900">
-                      Status Breakdown
-                    </h2>
-                    <span className="text-xs text-slate-400">All time</span>
+                    <h2 className="section-heading">Status Breakdown</h2>
+                    <span className="text-xs text-secondary">All time</span>
                   </div>
                   <div className="mt-4 h-72">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={statusBreakdown} barSize={36}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="var(--border)"
+                        />
                         <XAxis
                           dataKey="name"
-                          tick={{ fill: "#64748b", fontSize: 12 }}
+                          tick={{ fill: "var(--text-muted)", fontSize: 12 }}
                         />
-                        <YAxis tick={{ fill: "#64748b", fontSize: 12 }} />
+                        <YAxis
+                          tick={{ fill: "var(--text-muted)", fontSize: 12 }}
+                        />
                         <Tooltip />
                         <Bar
                           dataKey="value"
-                          fill="#0f172a"
+                          fill="var(--accent-2)"
                           radius={[6, 6, 0, 0]}
                         />
                       </BarChart>
@@ -220,18 +244,16 @@ const Dashboard = () => {
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-                  <h2 className="text-lg font-semibold text-slate-900">
-                    Success Rate
-                  </h2>
-                  <p className="mt-1 text-sm text-slate-500">
+                <div className="surface p-6">
+                  <h2 className="section-heading">Success Rate</h2>
+                  <p className="page-subtitle mt-2">
                     Offers compared to your total applications.
                   </p>
-                  <div className="mt-6 rounded-lg border border-slate-200 p-4">
-                    <p className="text-3xl font-semibold text-slate-900">
+                  <div className="mt-6 surface-2 p-4">
+                    <p className="text-3xl font-semibold text-primary">
                       {stats.successRate}%
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-secondary">
                       {stats.byStatus.Offer || 0} offers from {stats.total}{" "}
                       applications
                     </p>
@@ -239,48 +261,40 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
-                <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-                  <h2 className="text-lg font-semibold text-slate-900">
-                    Recent Applications
-                  </h2>
-                  <span className="text-xs text-slate-400">Last 5</span>
+              <div className="surface">
+                <div className="flex items-center justify-between app-divider px-6 py-4">
+                  <h2 className="section-heading">Recent Applications</h2>
+                  <span className="text-xs text-secondary">Last 5</span>
                 </div>
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto table-container">
                   <table className="min-w-full text-sm">
-                    <thead className="bg-slate-50 text-slate-500">
+                    <thead>
                       <tr>
-                        <th className="px-6 py-3 text-left font-medium">Role</th>
-                        <th className="px-6 py-3 text-left font-medium">
-                          Company
-                        </th>
-                        <th className="px-6 py-3 text-left font-medium">
-                          Status
-                        </th>
-                        <th className="px-6 py-3 text-left font-medium">
-                          Date
-                        </th>
+                        <th className="text-left font-medium">Role</th>
+                        <th className="text-left font-medium">Company</th>
+                        <th className="text-left font-medium">Status</th>
+                        <th className="text-left font-medium">Date</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody>
                       {stats.recentJobs.map((application) => (
                         <tr key={application.id}>
-                          <td className="px-6 py-4 font-medium text-slate-800">
+                          <td className="text-[13px] font-semibold">
                             {application.position}
                           </td>
-                          <td className="px-6 py-4 text-slate-600">
+                          <td className="text-secondary">
                             {application.company}
                           </td>
-                          <td className="px-6 py-4">
+                          <td>
                             <span
-                              className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${statusBadge(
+                              className={`badge ${statusClass(
                                 application.status
                               )}`}
                             >
                               {application.status}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-slate-500">
+                          <td className="text-muted">
                             {application.date_applied}
                           </td>
                         </tr>

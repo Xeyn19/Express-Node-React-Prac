@@ -232,10 +232,8 @@ const Applications = () => {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">
-            Applications
-          </h1>
-          <p className="text-sm text-slate-500">
+          <h1 className="page-title">Applications</h1>
+          <p className="page-subtitle">
             Track every role you have applied to and keep notes in one place.
           </p>
         </div>
@@ -244,17 +242,15 @@ const Applications = () => {
         </Link>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="surface p-6">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">
-              Application Pipeline
-            </h2>
-            <p className="text-sm text-slate-500">
+            <h2 className="section-heading">Application Pipeline</h2>
+            <p className="page-subtitle mt-2">
               Organize your applications as you move through each stage.
             </p>
           </div>
-          <span className="text-xs text-slate-400">
+          <span className="text-xs text-secondary">
             {jobs.length
               ? `Showing ${filteredJobs.length} of ${jobs.length} applications`
               : "No data yet"}
@@ -262,9 +258,20 @@ const Applications = () => {
         </div>
 
         <div className="mt-6 space-y-4">
-          <div className="grid gap-3 md:grid-cols-3">
-            <label className="flex flex-col gap-2 text-sm text-slate-600">
-              Search
+          <div className="filter-bar flex flex-col gap-3 md:flex-row">
+            <label className="filter-search">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="7" />
+                <path d="M20 20l-3.5-3.5" />
+              </svg>
               <input
                 type="search"
                 value={searchTerm}
@@ -273,44 +280,38 @@ const Applications = () => {
                 className="input input-bordered w-full"
               />
             </label>
-            <label className="flex flex-col gap-2 text-sm text-slate-600">
-              Status
-              <select
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value)}
-                className="select select-bordered w-full"
-              >
-                <option>All</option>
-                <option>Applied</option>
-                <option>Interview</option>
-                <option>Offer</option>
-                <option>Rejected</option>
-              </select>
-            </label>
-            <label className="flex flex-col gap-2 text-sm text-slate-600">
-              Date Sort
-              <select
-                value={dateSort}
-                onChange={(event) => setDateSort(event.target.value)}
-                className="select select-bordered w-full"
-              >
-                <option value="newest">Newest First</option>
-                <option value="oldest">Oldest First</option>
-              </select>
-            </label>
+            <select
+              value={statusFilter}
+              onChange={(event) => setStatusFilter(event.target.value)}
+              className="select select-bordered w-full md:w-40"
+            >
+              <option>All</option>
+              <option>Applied</option>
+              <option>Interview</option>
+              <option>Offer</option>
+              <option>Rejected</option>
+            </select>
+            <select
+              value={dateSort}
+              onChange={(event) => setDateSort(event.target.value)}
+              className="select select-bordered w-full md:w-40"
+            >
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+            </select>
           </div>
 
           {error && <div className="sr-only">{error}</div>}
           {isLoading && (
-            <div className="flex items-center gap-2 text-sm text-slate-500">
+            <div className="flex items-center gap-2 text-sm text-secondary">
               <span className="loading loading-spinner loading-sm" />
               Loading applications...
             </div>
           )}
 
           {!isLoading && !jobs.length && !error && (
-            <div className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
-              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+            <div className="surface p-6 text-center text-sm text-secondary">
+              <div className="mx-auto mb-3 empty-icon">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -326,10 +327,10 @@ const Applications = () => {
                   />
                 </svg>
               </div>
-              <p className="font-medium text-slate-700">
+              <p className="font-medium text-primary">
                 No applications yet.
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-secondary">
                 Add your first application to start tracking your progress.
               </p>
               <Link to="/add-job" className="btn btn-primary btn-sm mt-4">
@@ -339,8 +340,8 @@ const Applications = () => {
           )}
 
           {!isLoading && jobs.length > 0 && filteredJobs.length === 0 && (
-            <div className="rounded-lg border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
-              <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+            <div className="surface p-6 text-center text-sm text-secondary">
+              <div className="mx-auto mb-3 empty-icon">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -356,65 +357,52 @@ const Applications = () => {
                   />
                 </svg>
               </div>
-              <p className="font-medium text-slate-700">
+              <p className="font-medium text-primary">
                 No applications match your filters.
               </p>
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="mt-1 text-xs text-secondary">
                 Try a different search or reset the status filter.
               </p>
             </div>
           )}
 
           {!isLoading && filteredJobs.length > 0 && (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto table-container">
               <table className="min-w-full text-sm">
-                <thead className="bg-slate-50 text-slate-500">
+                <thead>
                   <tr>
-                    <th className="px-4 py-2 text-left font-medium">Company</th>
-                    <th className="px-4 py-2 text-left font-medium">Role</th>
-                    <th className="px-4 py-2 text-left font-medium">Status</th>
-                    <th className="px-4 py-2 text-left font-medium">
-                      Date Applied
-                    </th>
-                    <th className="px-4 py-2 text-left font-medium">Resume</th>
-                    <th className="px-4 py-2 text-left font-medium">Actions</th>
+                    <th className="text-left font-medium">Company</th>
+                    <th className="text-left font-medium">Role</th>
+                    <th className="text-left font-medium">Status</th>
+                    <th className="text-left font-medium">Date Applied</th>
+                    <th className="text-left font-medium">Resume</th>
+                    <th className="text-left font-medium">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody>
                   {filteredJobs.map((job) => (
                     <tr key={job.id}>
-                      <td className="px-4 py-3 font-medium text-slate-800">
+                      <td className="text-[13px] font-semibold">
                         {job.company}
                       </td>
-                      <td className="px-4 py-3 text-slate-600">
+                      <td className="text-secondary">
                         {job.position}
                       </td>
-                      <td className="px-4 py-3 text-slate-600">
+                      <td>
                         <span
-                          className={[
-                            "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold",
-                            job.status === "Applied" && "bg-blue-100 text-blue-700",
-                            job.status === "Interview" &&
-                              "bg-amber-100 text-amber-700",
-                            job.status === "Offer" &&
-                              "bg-emerald-100 text-emerald-700",
-                            job.status === "Rejected" &&
-                              "bg-rose-100 text-rose-700",
-                          ]
-                            .filter(Boolean)
-                            .join(" ")}
+                          className={`badge ${job.status.toLowerCase()}`}
                         >
                           {job.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-slate-500">
+                      <td className="text-muted">
                         {job.date_applied}
                       </td>
-                      <td className="px-4 py-3 text-slate-500">
+                      <td className="text-secondary">
                         {job.resume_url ? (
                           <a
                             href={job.resume_url}
-                            className="text-slate-900 underline"
+                            className="text-primary underline"
                             target="_blank"
                             rel="noreferrer"
                           >
@@ -424,22 +412,63 @@ const Applications = () => {
                           "--"
                         )}
                       </td>
-                      <td className="px-4 py-3 text-slate-500">
+                      <td>
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
-                            className="btn btn-ghost btn-xs"
+                            className="btn btn-ghost btn-icon"
                             onClick={() => openEditModal(job)}
+                            aria-label="Edit application"
+                            title="Edit"
                           >
-                            Edit
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.6"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="h-4 w-4"
+                              aria-hidden="true"
+                            >
+                              <path d="M12 20h9" />
+                              <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z" />
+                            </svg>
+                            <span className="sr-only">Edit</span>
                           </button>
                           <button
                             type="button"
-                            className="btn btn-ghost btn-xs text-rose-600"
+                            className="btn btn-danger btn-icon"
                             onClick={() => handleDelete(job.id)}
                             disabled={isDeleting === job.id}
+                            aria-label="Delete application"
+                            title="Delete"
                           >
-                            {isDeleting === job.id ? "Deleting..." : "Delete"}
+                            {isDeleting === job.id ? (
+                              <span className="loading loading-spinner loading-xs" />
+                            ) : (
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.6"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="h-4 w-4"
+                                aria-hidden="true"
+                              >
+                                <path d="M3 6h18" />
+                                <path d="M8 6V4h8v2" />
+                                <path d="M6 6l1 14h10l1-14" />
+                                <path d="M10 11v6" />
+                                <path d="M14 11v6" />
+                              </svg>
+                            )}
+                            <span className="sr-only">
+                              {isDeleting === job.id ? "Deleting" : "Delete"}
+                            </span>
                           </button>
                         </div>
                       </td>
@@ -454,9 +483,9 @@ const Applications = () => {
 
       {editingJobId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-xl rounded-xl bg-white shadow-lg">
-            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-              <h3 className="text-lg font-semibold text-slate-900">
+          <div className="w-full max-w-xl surface">
+            <div className="flex items-center justify-between app-divider px-6 py-4">
+              <h3 className="section-heading">
                 Edit Application
               </h3>
               <button
@@ -470,7 +499,7 @@ const Applications = () => {
             </div>
             <form className="space-y-4 p-6" onSubmit={handleEditSubmit}>
               <div className="grid gap-4 md:grid-cols-2">
-                <label className="flex flex-col gap-2 text-sm text-slate-600">
+                <label className="flex flex-col gap-2 text-sm text-secondary">
                   Company
                   <input
                     type="text"
@@ -483,12 +512,12 @@ const Applications = () => {
                     required
                   />
                   {editErrors.company && (
-                    <span className="text-xs text-rose-600">
+                    <span className="text-xs text-danger">
                       {editErrors.company}
                     </span>
                   )}
                 </label>
-                <label className="flex flex-col gap-2 text-sm text-slate-600">
+                <label className="flex flex-col gap-2 text-sm text-secondary">
                   Position
                   <input
                     type="text"
@@ -501,12 +530,12 @@ const Applications = () => {
                     required
                   />
                   {editErrors.position && (
-                    <span className="text-xs text-rose-600">
+                    <span className="text-xs text-danger">
                       {editErrors.position}
                     </span>
                   )}
                 </label>
-                <label className="flex flex-col gap-2 text-sm text-slate-600">
+                <label className="flex flex-col gap-2 text-sm text-secondary">
                   Status
                   <select
                     name="status"
@@ -520,7 +549,7 @@ const Applications = () => {
                     <option>Rejected</option>
                   </select>
                 </label>
-                <label className="flex flex-col gap-2 text-sm text-slate-600">
+                <label className="flex flex-col gap-2 text-sm text-secondary">
                   Date Applied
                   <input
                     type="date"
@@ -532,13 +561,13 @@ const Applications = () => {
                     }`}
                   />
                   {editErrors.date_applied && (
-                    <span className="text-xs text-rose-600">
+                    <span className="text-xs text-danger">
                       {editErrors.date_applied}
                     </span>
                   )}
                 </label>
               </div>
-              <label className="flex flex-col gap-2 text-sm text-slate-600">
+              <label className="flex flex-col gap-2 text-sm text-secondary">
                 Job URL
                 <input
                   type="url"
@@ -548,7 +577,7 @@ const Applications = () => {
                   className="input input-bordered w-full"
                 />
               </label>
-              <label className="flex flex-col gap-2 text-sm text-slate-600">
+              <label className="flex flex-col gap-2 text-sm text-secondary">
                 Notes
                 <textarea
                   rows="3"
@@ -558,12 +587,12 @@ const Applications = () => {
                   className="textarea textarea-bordered w-full"
                 />
               </label>
-              <label className="flex flex-col gap-2 text-sm text-slate-600">
+              <label className="flex flex-col gap-2 text-sm text-secondary">
                 Resume
                 {editResumeUrl && (
                   <a
                     href={editResumeUrl}
-                    className="text-xs text-slate-600 underline"
+                    className="text-xs text-secondary underline"
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -579,7 +608,7 @@ const Applications = () => {
                   }
                 />
                 {editResumeFile && (
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-secondary">
                     Selected: {editResumeFile.name}
                   </span>
                 )}

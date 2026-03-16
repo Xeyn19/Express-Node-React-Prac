@@ -23,6 +23,12 @@ const AppLayout = () => {
     user?.username ||
     user?.email ||
     "User";
+  const initials = displayName
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase())
+    .join("");
 
   const handleLogout = () => {
     logout();
@@ -39,23 +45,24 @@ const AppLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 text-slate-900 flex">
+    <div className="min-h-screen flex app-shell">
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/40 md:hidden"
+          className="fixed inset-0 z-30 md:hidden app-overlay"
           onClick={() => setIsSidebarOpen(false)}
           role="presentation"
         />
       )}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 transform bg-slate-900 text-slate-100 border-r border-slate-800 transition-transform duration-200 md:static md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 transform transition-transform duration-200 md:static md:translate-x-0 app-sidebar ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="px-6 py-5 text-lg font-semibold tracking-tight">
-          Job Tracker
+        <div className="px-6 py-5 app-logo">
+          <span className="app-logo-accent">Job</span>
+          <span className="app-logo-track">Track</span>
         </div>
-        <nav className="px-3 pb-6 flex flex-col gap-1">
+        <nav className="px-3 pb-6 app-nav">
           {navigation.map((item) => (
             <NavLink
               key={item.to}
@@ -63,10 +70,8 @@ const AppLayout = () => {
               onClick={handleNavClick}
               className={({ isActive }) =>
                 [
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition",
-                  isActive
-                    ? "bg-slate-800 text-white"
-                    : "text-slate-300 hover:bg-slate-800/70 hover:text-white",
+                  "flex items-center app-nav-item",
+                  isActive ? "is-active" : "",
                 ].join(" ")
               }
             >
@@ -74,13 +79,13 @@ const AppLayout = () => {
             </NavLink>
           ))}
         </nav>
-        <div className="px-6 py-4 text-xs text-slate-400 border-t border-slate-800">
-          Track your job search with clarity.
+        <div className="px-6 py-4 text-xs text-secondary app-divider">
+          Stay focused on the pipeline.
         </div>
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0 md:ml-0">
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
+        <header className="app-topbar flex items-center justify-between px-6">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -103,11 +108,14 @@ const AppLayout = () => {
                 />
               </svg>
             </button>
-            <div className="text-sm text-slate-500">Welcome back</div>
+            <div className="text-secondary text-sm">Welcome back</div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="text-sm font-semibold text-slate-700">
-              {displayName}
+            <div className="flex items-center gap-2">
+              <div className="user-avatar">
+                {initials || "U"}
+              </div>
+              <div className="text-sm text-secondary">{displayName}</div>
             </div>
             <button
               type="button"

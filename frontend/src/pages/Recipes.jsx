@@ -73,7 +73,7 @@ const Recipes = () => {
   }, [isAuthenticated]);
 
   return (
-    <div className="flex justify-center bg-slate-200 flex-col min-h-screen items-center px-4">
+    <div className="flex justify-center auth-page flex-col min-h-screen items-center px-4">
       <div className="w-full max-w-xl">
         <div className="flex items-center justify-between my-5">
           <h1 className="text-2xl font-semibold">Recipes</h1>
@@ -89,7 +89,7 @@ const Recipes = () => {
           {recipes.map((recipe) => (
             <div
               key={recipe.id}
-              className="bg-white grid grid-cols-2 px-10 py-5 rounded-md shadow-md border border-slate-600 mb-3"
+              className="surface grid grid-cols-2 px-10 py-5 mb-3"
             >
               <li>{recipe.id}</li>
               <li>{recipe.name}</li>

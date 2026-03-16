@@ -23,8 +23,8 @@ const ProtectedRoute = () => {
 
   if (isAuthLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-base-200 px-4">
-        <div className="card bg-base-100 shadow-xl">
+      <div className="min-h-screen flex items-center justify-center auth-page px-4">
+        <div className="card auth-card">
           <div className="card-body">
             <p className="text-base">Checking your session...</p>
           </div>

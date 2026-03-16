@@ -147,10 +147,10 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-base-200 flex items-center justify-center px-4">
-      <div className="card w-full max-w-md bg-base-100 shadow-xl">
+    <div className="min-h-screen auth-page flex items-center justify-center px-4">
+      <div className="card auth-card w-full max-w-md">
         <div className="card-body">
-          <h1 className="card-title text-2xl">Login</h1>
+          <h1 className="page-title">Login</h1>
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             <label className="form-control w-full">
@@ -178,7 +178,7 @@ const Login = () => {
                 />
                 <button
                   type="button"
-                  className="absolute inset-y-0 right-2 my-auto text-base-content/70 hover:text-base-content"
+                  className="absolute inset-y-0 right-2 my-auto text-secondary hover:text-primary"
                   onClick={() => setShowPassword((previous) => !previous)}
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >

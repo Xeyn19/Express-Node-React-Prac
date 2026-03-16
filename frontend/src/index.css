@@ -1,2 +1,493 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 @plugin "daisyui";
+
+:root {
+  --bg-page: #0f1117;
+  --bg-surface: #181c27;
+  --bg-surface-2: #1e2333;
+  --bg-input: #1a1f2e;
+  --border: #2a2f45;
+  --border-light: #1f2438;
+  --accent: #6c63ff;
+  --accent-hover: #5a52e0;
+  --accent-muted: rgba(108, 99, 255, 0.15);
+  --accent-2: #4ecdc4;
+  --status-applied: #4a9eff;
+  --status-interview: #f5a623;
+  --status-offer: #22d3a0;
+  --status-rejected: #ff5a5a;
+  --text-primary: #f0f2ff;
+  --text-secondary: #8890a8;
+  --text-muted: #555d7a;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 6px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  background: var(--bg-page);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+::selection {
+  background: rgba(108, 99, 255, 0.3);
+}
+
+.app-shell {
+  background: var(--bg-page);
+}
+
+.app-overlay {
+  background: rgba(10, 12, 18, 0.6);
+}
+
+.app-sidebar {
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border);
+}
+
+.app-logo {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.app-logo-accent {
+  color: var(--accent);
+}
+
+.app-logo-track {
+  color: var(--text-primary);
+}
+
+.app-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.app-nav-item {
+  color: var(--text-secondary);
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  gap: 10px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.app-nav-item.is-active,
+.app-nav-item:hover {
+  background: var(--accent-muted);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.app-divider {
+  border-top: 1px solid var(--border-light);
+}
+
+.app-topbar {
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
+  height: 56px;
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.page-subtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.section-heading {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.surface {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.surface-2 {
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.stat-card {
+  padding: 18px 20px;
+  position: relative;
+}
+
+.stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+}
+
+.stat-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stat-strip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  border-radius: var(--radius-xs);
+}
+
+.strip-interview {
+  background: var(--status-interview);
+}
+
+.strip-offer {
+  background: var(--status-offer);
+}
+
+.strip-rejected {
+  background: var(--status-rejected);
+}
+
+.stat-value.interview {
+  color: var(--status-interview);
+}
+
+.stat-value.offer {
+  color: var(--status-offer);
+}
+
+.stat-value.rejected {
+  color: var(--status-rejected);
+}
+
+.badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+}
+
+.badge.applied {
+  background: rgba(74, 158, 255, 0.12);
+  color: var(--status-applied);
+  border: 1px solid rgba(74, 158, 255, 0.25);
+}
+
+.badge.interview {
+  background: rgba(245, 166, 35, 0.12);
+  color: var(--status-interview);
+  border: 1px solid rgba(245, 166, 35, 0.25);
+}
+
+.badge.offer {
+  background: rgba(34, 211, 160, 0.12);
+  color: var(--status-offer);
+  border: 1px solid rgba(34, 211, 160, 0.25);
+}
+
+.badge.rejected {
+  background: rgba(255, 90, 90, 0.1);
+  color: var(--status-rejected);
+  border: 1px solid rgba(255, 90, 90, 0.22);
+}
+
+.filter-bar {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.filter-search {
+  position: relative;
+  flex: 1;
+}
+
+.filter-search svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--text-muted);
+}
+
+.filter-search input {
+  padding-left: 36px;
+}
+
+.table-container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-container thead {
+  background: rgba(255, 255, 255, 0.025);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+
+.table-container th,
+.table-container td {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.table-container tbody tr:hover {
+  background: var(--bg-surface-2);
+}
+
+.skeleton-line {
+  background: var(--bg-input);
+  border-radius: var(--radius-xs);
+}
+
+.skeleton-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.btn {
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 18px;
+  border: 1px solid transparent;
+  transition: background 0.15s, color 0.15s, transform 0.15s;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--accent-hover);
+  transform: scale(0.99);
+}
+
+.btn-outline,
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.btn-outline:hover,
+.btn-ghost:hover {
+  background: var(--bg-surface-2);
+  color: var(--text-primary);
+}
+
+.btn-danger {
+  background: rgba(255, 90, 90, 0.12);
+  color: var(--status-rejected);
+  border: 1px solid rgba(255, 90, 90, 0.25);
+}
+
+.btn-danger:hover {
+  background: rgba(255, 90, 90, 0.22);
+}
+
+.btn-icon {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border-radius: var(--radius-xs);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input,
+.select,
+.textarea,
+.file-input {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+  padding: 10px 14px;
+  box-shadow: none;
+}
+
+.file-input {
+  padding: 8px 12px;
+  cursor: pointer;
+  width: 100%;
+  display: block;
+  line-height: 1.2;
+}
+
+.file-input::file-selector-button {
+  margin-right: 12px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  height: 100%;
+  border-radius: var(--radius-xs);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.file-input:hover::file-selector-button {
+  background: var(--bg-surface-2);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus,
+.file-input:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.15);
+}
+
+.input:hover,
+.select:hover,
+.textarea:hover,
+.file-input:hover {
+  border-color: var(--accent);
+}
+
+.input-error {
+  border-color: var(--status-rejected);
+}
+
+.label-text {
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: none;
+}
+
+.auth-page {
+  background: var(--bg-page);
+}
+
+.auth-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.text-primary {
+  color: var(--text-primary);
+}
+
+.text-danger {
+  color: var(--status-rejected);
+}
+
+.empty-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  background: var(--bg-surface-2);
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-page);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}

@@ -85,17 +85,15 @@ const AddJob = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">
-          Add Job Application
-        </h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="page-title">Add Job Application</h1>
+        <p className="page-subtitle">
           Capture the role details so you can follow up with confidence.
         </p>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="surface p-6">
         <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
-          <label className="flex flex-col gap-2 text-sm text-slate-600">
+          <label className="flex flex-col gap-2 text-sm text-secondary">
             Company Name
             <input
               type="text"
@@ -109,13 +107,13 @@ const AddJob = () => {
               required
             />
             {fieldErrors.company && (
-              <span className="text-xs text-rose-600">
+              <span className="text-xs text-danger">
                 {fieldErrors.company}
               </span>
             )}
           </label>
 
-          <label className="flex flex-col gap-2 text-sm text-slate-600">
+          <label className="flex flex-col gap-2 text-sm text-secondary">
             Job Title / Position
             <input
               type="text"
@@ -129,13 +127,13 @@ const AddJob = () => {
               required
             />
             {fieldErrors.position && (
-              <span className="text-xs text-rose-600">
+              <span className="text-xs text-danger">
                 {fieldErrors.position}
               </span>
             )}
           </label>
 
-          <label className="flex flex-col gap-2 text-sm text-slate-600">
+          <label className="flex flex-col gap-2 text-sm text-secondary">
             Status
             <select
               name="status"
@@ -150,7 +148,7 @@ const AddJob = () => {
             </select>
           </label>
 
-          <label className="flex flex-col gap-2 text-sm text-slate-600">
+          <label className="flex flex-col gap-2 text-sm text-secondary">
             Date Applied
             <input
               type="date"
@@ -162,13 +160,13 @@ const AddJob = () => {
               }`}
             />
             {fieldErrors.date_applied && (
-              <span className="text-xs text-rose-600">
+              <span className="text-xs text-danger">
                 {fieldErrors.date_applied}
               </span>
             )}
           </label>
 
-          <label className="flex flex-col gap-2 text-sm text-slate-600 md:col-span-2">
+          <label className="flex flex-col gap-2 text-sm text-secondary md:col-span-2">
             Job URL
             <input
               type="url"
@@ -180,7 +178,7 @@ const AddJob = () => {
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm text-slate-600 md:col-span-2">
+          <label className="flex flex-col gap-2 text-sm text-secondary md:col-span-2">
             Notes
             <textarea
               rows="4"
@@ -192,7 +190,7 @@ const AddJob = () => {
             />
           </label>
 
-          <label className="flex flex-col gap-2 text-sm text-slate-600 md:col-span-2">
+          <label className="flex flex-col gap-2 text-sm text-secondary md:col-span-2">
             Resume Upload
             <input
               type="file"
@@ -203,7 +201,7 @@ const AddJob = () => {
               }
             />
             {resumeFile && (
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-secondary">
                 Selected: {resumeFile.name}
               </span>
             )}

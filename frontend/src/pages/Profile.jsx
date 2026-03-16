@@ -94,23 +94,23 @@ const Profile = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-900">Profile</h1>
-        <p className="text-sm text-slate-500">
+        <h1 className="page-title">Profile</h1>
+        <p className="page-subtitle">
           Manage your account details and preferences.
         </p>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="surface p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-sm text-slate-500">Full name</p>
-            <p className="text-lg font-semibold text-slate-900">
+            <p className="text-sm text-secondary">Full name</p>
+            <p className="text-lg font-semibold text-primary">
               {fullName || "Add your name"}
             </p>
           </div>
           <div>
-            <p className="text-sm text-slate-500">Email</p>
-            <p className="text-lg font-semibold text-slate-900">
+            <p className="text-sm text-secondary">Email</p>
+            <p className="text-lg font-semibold text-primary">
               {user?.email || "you@example.com"}
             </p>
           </div>
@@ -121,7 +121,7 @@ const Profile = () => {
             className="mt-6 grid gap-4 sm:grid-cols-2"
             onSubmit={handleSubmit}
           >
-            <label className="flex flex-col gap-2 text-sm text-slate-600">
+          <label className="flex flex-col gap-2 text-sm text-secondary">
               Preferred role
               <input
                 type="text"
@@ -133,7 +133,7 @@ const Profile = () => {
                 disabled={isLoading}
               />
             </label>
-            <label className="flex flex-col gap-2 text-sm text-slate-600">
+          <label className="flex flex-col gap-2 text-sm text-secondary">
               Target location
               <input
                 type="text"
@@ -169,18 +169,18 @@ const Profile = () => {
           </form>
         ) : (
           <div className="mt-6 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-lg border border-slate-200 p-4">
-              <p className="text-sm text-slate-500">Preferred role</p>
-              <p className="text-base font-semibold text-slate-900">
-                {profile.preferred_role || "Not set"}
-              </p>
-            </div>
-            <div className="rounded-lg border border-slate-200 p-4">
-              <p className="text-sm text-slate-500">Target location</p>
-              <p className="text-base font-semibold text-slate-900">
-                {profile.target_location || "Not set"}
-              </p>
-            </div>
+          <div className="surface-2 p-4">
+            <p className="text-sm text-secondary">Preferred role</p>
+            <p className="text-base font-semibold text-primary">
+              {profile.preferred_role || "Not set"}
+            </p>
+          </div>
+          <div className="surface-2 p-4">
+            <p className="text-sm text-secondary">Target location</p>
+            <p className="text-base font-semibold text-primary">
+              {profile.target_location || "Not set"}
+            </p>
+          </div>
             <div className="sm:col-span-2 flex justify-end">
               <button
                 type="button"
