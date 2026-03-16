@@ -1,6 +1,6 @@
 # Frontend (React + Vite)
 
-React UI for the Job Application Tracker. Includes auth screens, dashboard analytics, job management, and responsive layout.
+React UI for the Job Application Tracker. Includes auth screens, dashboard analytics, job management, profile preferences, and a modern dark theme.
 
 ## Stack
 
@@ -25,7 +25,7 @@ npm run dev
 
 Default frontend URL:
 
-- `http://localhost:3000`
+- `http://localhost:5173`
 
 ## Environment
 
@@ -49,7 +49,8 @@ Set the backend base URL with `frontend/.env`:
 - Search, filter, and sort applications
 - Add/edit/delete applications
 - Resume upload handling
-- Toast notifications and loading states
+- Profile preferences (preferred role, target location)
+- Toast notifications, loading states, and empty states
 - Mobile sidebar menu
 
 ## Notes

@@ -1,6 +1,6 @@
-# Job Tracker (Express + React)
+# Job Track (Express + React)
 
-Full-stack Job Application Tracker with JWT auth, job CRUD, dashboard stats, resume uploads, and a responsive UI.
+Full-stack Job Application Tracker with JWT auth, job CRUD, dashboard stats, resume uploads, profile preferences, and a modern dark UI.
 
 ## Structure
 
@@ -10,12 +10,13 @@ Full-stack Job Application Tracker with JWT auth, job CRUD, dashboard stats, res
 ## Features
 
 - Register/login with JWT
-- Protected routes
+- Protected routes + auto-logout on expired sessions
 - Job applications CRUD (create, edit, delete)
-- Resume upload (PDF/DOC/DOCX)
-- Dashboard stats and recent jobs
+- Resume upload + resume view links (PDF/DOC/DOCX)
+- Dashboard stats, charts, and recent jobs
 - Search, filter, and sort on applications
-- Toast notifications and loading states
+- Profile preferences (preferred role, target location)
+- Toast notifications, loading states, and empty states
 
 ## Run Locally
 
@@ -36,6 +37,10 @@ cd frontend
 npm install
 npm run dev
 ```
+
+Default frontend URL:
+
+- `http://localhost:5173`
 
 ## Environment Variables
 
@@ -71,6 +76,11 @@ Jobs:
 - `POST /api/jobs`
 - `PATCH /api/jobs/:id`
 - `DELETE /api/jobs/:id`
+
+Profile:
+
+- `GET /api/profile`
+- `PUT /api/profile`
 
 Dashboard:
 

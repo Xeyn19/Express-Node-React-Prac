@@ -464,6 +464,35 @@ a {
   color: var(--status-rejected);
 }
 
+.resume-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  background: transparent;
+  padding: 4px 8px;
+  border-radius: 999px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.resume-link:hover {
+  background: var(--bg-surface-2);
+  color: var(--text-primary);
+}
+
+.resume-link svg {
+  width: 14px;
+  height: 14px;
+}
+
+.resume-empty {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
 .empty-icon {
   width: 48px;
   height: 48px;

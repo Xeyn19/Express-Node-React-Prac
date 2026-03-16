@@ -1,6 +1,6 @@
 # Backend (Express API)
 
-Express API for the Job Tracker app. Handles auth, job applications, dashboard stats, and resume uploads.
+Express API for the Job Tracker app. Handles auth, job applications, dashboard stats, profile preferences, and resume uploads.
 
 ## Stack
 
@@ -59,6 +59,11 @@ Jobs:
 - `POST /api/jobs`
 - `PATCH /api/jobs/:id`
 - `DELETE /api/jobs/:id`
+
+Profile:
+
+- `GET /api/profile`
+- `PUT /api/profile`
 
 Dashboard:
 

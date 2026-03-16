@@ -402,14 +402,42 @@ const Applications = () => {
                         {job.resume_url ? (
                           <a
                             href={job.resume_url}
-                            className="text-primary underline"
+                            className="resume-link"
                             target="_blank"
                             rel="noreferrer"
                           >
-                            View
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              aria-hidden="true"
+                            >
+                              <path
+                                d="M7 3h7l4 4v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"
+                                stroke="currentColor"
+                                strokeWidth="1.6"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <path
+                                d="M14 3v4h4"
+                                stroke="currentColor"
+                                strokeWidth="1.6"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                              <path
+                                d="M8 11h8M8 14h8M8 17h5"
+                                stroke="currentColor"
+                                strokeWidth="1.6"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                            
                           </a>
                         ) : (
-                          "--"
+                          <span className="resume-empty">No resume</span>
                         )}
                       </td>
                       <td>
