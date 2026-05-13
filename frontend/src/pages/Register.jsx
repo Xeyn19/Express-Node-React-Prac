@@ -1,8 +1,31 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import AlertBanner from "../components/AlertBanner";
+import AuthLayout from "../components/AuthLayout";
 import { apiFetch } from "../lib/api";
 import { toastError, toastSuccess } from "../lib/toast";
+
+const highlights = [
+  {
+    title: "Start with structure",
+    copy: "Create an account and organize companies, positions, notes, and resume files from day one.",
+  },
+  {
+    title: "Stay follow-up ready",
+    copy: "Keep the latest role details in one place so interview prep and outreach stay simple.",
+  },
+  {
+    title: "Use it anywhere",
+    copy: "The interface is tuned for phones, tablets, and desktop so updates are easy on any device.",
+  },
+];
+
+const metrics = [
+  { value: "Fast", label: "setup" },
+  { value: "Secure", label: "JWT auth" },
+  { value: "Cloud", label: "deployment ready" },
+  { value: "Live", label: "job tracking" },
+];
 
 const EyeIcon = () => (
   <svg
@@ -60,6 +83,7 @@ const Register = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((previous) => ({
@@ -84,7 +108,7 @@ const Register = () => {
     }
 
     if (formData.password !== formData.confirmPassword) {
-      const message = "Password and Confirm Password do not match.";
+      const message = "Password and confirm password do not match.";
       setError(message);
       toastError(message);
       return;
@@ -92,7 +116,6 @@ const Register = () => {
 
     try {
       setIsSubmitting(true);
-
       const response = await apiFetch("/api/register", {
         method: "POST",
         data: {
@@ -104,20 +127,16 @@ const Register = () => {
       });
 
       const result = response.data || {};
-
-      const message = result.message || "Registration successful.";
-      toastSuccess("Registration successful.");
+      toastSuccess(result.message || "Registration successful.");
+      const email = formData.email.trim();
       setFormData(initialFormData);
-      setTimeout(() => {
-        navigate("/login", {
+      navigate("/login", {
         replace: true,
         state: {
           message: "Registration successful. Please login.",
-          email: formData.email.trim(),
+          email,
         },
-      }, 3000);
-      })
-      
+      });
     } catch (registerError) {
       const message =
         registerError?.response?.data?.message ||
@@ -130,117 +149,135 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen auth-page flex items-center justify-center px-4">
-      <div className="card auth-card w-full max-w-lg">
-        <div className="card-body">
-          <h1 className="page-title">Create Account</h1>
+    <AuthLayout
+      eyebrow="Create your workspace"
+      title="Build a cleaner system for every application."
+      description="Create your account and move from scattered notes to a focused hiring pipeline with better visibility on every device."
+      highlights={highlights}
+      metrics={metrics}
+      formEyebrow="Get started"
+      formTitle="Create account"
+      formDescription="Set up your profile and start tracking applications, resume versions, and follow-ups in one place."
+    >
+      <form className="auth-form-grid" onSubmit={handleSubmit}>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="form-control w-full">
+            <span className="label-text mb-2">First name</span>
+            <input
+              type="text"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+              className="input input-bordered w-full"
+              placeholder="Edgar"
+              autoComplete="given-name"
+            />
+          </label>
 
-          <form className="space-y-4" onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <label className="form-control w-full">
-                <span className="label-text mb-1">First Name</span>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleChange}
-                  className="input input-bordered w-full"
-                  placeholder="John"
-                />
-              </label>
-
-              <label className="form-control w-full">
-                <span className="label-text mb-1">Last Name</span>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  className="input input-bordered w-full"
-                  placeholder="Doe"
-                />
-              </label>
-            </div>
-
-            <label className="form-control w-full">
-              <span className="label-text mb-1">Email</span>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="input input-bordered w-full"
-                placeholder="john@example.com"
-              />
-            </label>
-
-            <label className="form-control w-full">
-              <span className="label-text mb-1">Password</span>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="input input-bordered w-full pr-12"
-                  placeholder="Enter password"
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-2 my-auto text-secondary hover:text-primary"
-                  onClick={() => setShowPassword((previous) => !previous)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                </button>
-              </div>
-            </label>
-
-            <label className="form-control w-full">
-              <span className="label-text mb-1">Confirm Password</span>
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="input input-bordered w-full pr-12"
-                  placeholder="Confirm password"
-                />
-                <button
-                  type="button"
-                  className="absolute inset-y-0 right-2 my-auto text-secondary hover:text-primary"
-                  onClick={() =>
-                    setShowConfirmPassword((previous) => !previous)
-                  }
-                  aria-label={
-                    showConfirmPassword
-                      ? "Hide confirm password"
-                      : "Show confirm password"
-                  }
-                >
-                  {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
-                </button>
-              </div>
-            </label>
-
-            {error && <div className="sr-only">{error}</div>}
-
-            <button
-              type="submit"
-              className={`btn btn-primary w-full mt-3 ${isSubmitting ? "btn-disabled" : ""}`}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Registering..." : "Register"}
-            </button>
-
-            <Link to="/login" className="btn btn-outline w-full">
-              Already have an account? Login
-            </Link>
-          </form>
+          <label className="form-control w-full">
+            <span className="label-text mb-2">Last name</span>
+            <input
+              type="text"
+              name="lastName"
+              value={formData.lastName}
+              onChange={handleChange}
+              className="input input-bordered w-full"
+              placeholder="Orosa"
+              autoComplete="family-name"
+            />
+          </label>
         </div>
-      </div>
-    </div>
+
+        <label className="form-control w-full">
+          <span className="label-text mb-2">Email</span>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            className="input input-bordered w-full"
+            placeholder="you@example.com"
+            autoComplete="email"
+          />
+        </label>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <label className="form-control w-full">
+            <span className="label-text mb-2">Password</span>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="input input-bordered w-full pr-12"
+                placeholder="At least 6 characters"
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-2 my-auto text-secondary transition hover:text-primary"
+                onClick={() => setShowPassword((previous) => !previous)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+              </button>
+            </div>
+          </label>
+
+          <label className="form-control w-full">
+            <span className="label-text mb-2">Confirm password</span>
+            <div className="relative">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className="input input-bordered w-full pr-12"
+                placeholder="Re-enter password"
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-2 my-auto text-secondary transition hover:text-primary"
+                onClick={() =>
+                  setShowConfirmPassword((previous) => !previous)
+                }
+                aria-label={
+                  showConfirmPassword
+                    ? "Hide confirm password"
+                    : "Show confirm password"
+                }
+              >
+                {showConfirmPassword ? <EyeOffIcon /> : <EyeIcon />}
+              </button>
+            </div>
+          </label>
+        </div>
+
+        <p className="field-hint">
+          Use a strong password so your job search notes and uploaded resumes
+          stay protected.
+        </p>
+
+        <AlertBanner message={error} />
+
+        <button
+          type="submit"
+          className={`btn btn-primary mt-2 w-full ${isSubmitting ? "btn-disabled" : ""}`}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Creating Account..." : "Create Account"}
+        </button>
+
+        <p className="auth-footer-text">
+          Already have an account?{" "}
+          <Link to="/login" className="auth-link">
+            Sign in instead
+          </Link>
+        </p>
+      </form>
+    </AuthLayout>
   );
 };
 

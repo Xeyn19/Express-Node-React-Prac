@@ -10,10 +10,16 @@ const api = axios.create({
   },
 });
 
+const isPublicAuthRequest = (url = "") =>
+  ["/api/login", "/api/register"].some((path) => url.includes(path));
+
 const redirectToLogin = () => {
   clearAuthSession();
   if (typeof window !== "undefined") {
-    window.location.href = "/login";
+    if (window.location.pathname !== "/login") {
+      window.history.replaceState({}, "", "/login");
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    }
   }
 };
 
@@ -36,6 +42,10 @@ api.interceptors.response.use(
     const { response, config } = error || {};
 
     if (!response || response.status !== 401 || !config) {
+      return Promise.reject(error);
+    }
+
+    if (isPublicAuthRequest(config.url)) {
       return Promise.reject(error);
     }
 

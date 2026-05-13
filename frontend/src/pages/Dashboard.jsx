@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { Link } from "react-router-dom";
+import AlertBanner from "../components/AlertBanner";
 import { authenticatedFetch } from "../lib/api";
 import { toastError } from "../lib/toast";
 
@@ -110,13 +111,26 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="page-title">Dashboard</h1>
-        <p className="page-subtitle">
-          Monitor your pipeline and stay on top of every application.
-        </p>
+    <div className="space-y-6 lg:space-y-8">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Dashboard</h1>
+          <p className="page-subtitle">
+            See where your search stands, which stages need attention, and what
+            should happen next.
+          </p>
+        </div>
+        <div className="page-actions">
+          <Link to="/applications" className="btn btn-outline btn-sm">
+            Review applications
+          </Link>
+          <Link to="/add-job" className="btn btn-primary btn-sm">
+            Add application
+          </Link>
+        </div>
       </div>
+
+      <AlertBanner message={error} />
 
       {isLoading ? (
         <div className="space-y-6 animate-pulse">
@@ -131,31 +145,25 @@ const Dashboard = () => {
               </div>
             ))}
           </div>
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2 skeleton-panel p-6">
+          <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(280px,0.8fr)]">
+            <div className="skeleton-panel p-6">
               <div className="h-4 w-40 skeleton-line" />
-              <div className="mt-4 h-64 skeleton-line" />
+              <div className="mt-4 h-72 skeleton-line" />
             </div>
             <div className="skeleton-panel p-6">
               <div className="h-4 w-32 skeleton-line" />
               <div className="mt-4 h-40 skeleton-line" />
             </div>
           </div>
-          <div className="skeleton-panel">
-            <div className="app-divider px-6 py-4">
-              <div className="h-4 w-40 skeleton-line" />
-            </div>
-            <div className="p-6">
-              <div className="h-32 skeleton-line" />
-            </div>
+          <div className="skeleton-panel p-6">
+            <div className="h-4 w-40 skeleton-line" />
+            <div className="mt-4 h-44 skeleton-line" />
           </div>
         </div>
       ) : (
         <>
-          {error && <div className="sr-only">{error}</div>}
-
           {!error && stats.total === 0 && (
-            <div className="surface p-10 text-center">
+            <div className="surface empty-state">
               <div className="mx-auto mb-4 empty-icon">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -172,11 +180,12 @@ const Dashboard = () => {
                   />
                 </svg>
               </div>
-              <h3 className="page-title">No applications yet</h3>
-              <p className="page-subtitle mt-1">
-                Start by adding your first job application to track progress.
+              <h2 className="page-title text-[1.7rem]">No applications yet</h2>
+              <p className="page-subtitle mx-auto mt-2">
+                Start tracking your first role so your dashboard can show stage
+                counts, recent applications, and success rate.
               </p>
-              <Link to="/add-job" className="btn btn-primary btn-sm mt-4">
+              <Link to="/add-job" className="btn btn-primary mt-5">
                 Add your first application
               </Link>
             </div>
@@ -186,10 +195,7 @@ const Dashboard = () => {
             <>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
                 {cards.map((stat) => (
-                  <div
-                    key={stat.label}
-                    className="surface stat-card"
-                  >
+                  <div key={stat.label} className="surface stat-card">
                     {stat.tone !== "total" && (
                       <span
                         className={`stat-strip strip-${stat.tone}`}
@@ -199,7 +205,7 @@ const Dashboard = () => {
                     <p className="stat-label">{stat.label}</p>
                     <p
                       className={[
-                        "mt-2 stat-value",
+                        "stat-value",
                         stat.tone === "interview" && "interview",
                         stat.tone === "offer" && "offer",
                         stat.tone === "rejected" && "rejected",
@@ -213,31 +219,51 @@ const Dashboard = () => {
                 ))}
               </div>
 
-              <div className="grid gap-6 lg:grid-cols-3">
-                <div className="lg:col-span-2 surface p-6">
-                  <div className="flex items-center justify-between">
-                    <h2 className="section-heading">Status Breakdown</h2>
-                    <span className="text-xs text-secondary">All time</span>
+              <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.8fr)]">
+                <div className="chart-shell">
+                  <div className="page-header gap-3">
+                    <div>
+                      <h2 className="section-heading">Status Breakdown</h2>
+                      <p className="page-subtitle mt-2">
+                        View how your applications are spread across each stage.
+                      </p>
+                    </div>
+                    <span className="text-xs uppercase tracking-[0.14em] text-secondary">
+                      All time
+                    </span>
                   </div>
-                  <div className="mt-4 h-72">
+
+                  <div className="mt-6 h-72 sm:h-80">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={statusBreakdown} barSize={36}>
+                      <BarChart data={statusBreakdown} barSize={28}>
                         <CartesianGrid
                           strokeDasharray="3 3"
-                          stroke="var(--border)"
+                          stroke="rgba(148, 163, 184, 0.14)"
                         />
                         <XAxis
                           dataKey="name"
-                          tick={{ fill: "var(--text-muted)", fontSize: 12 }}
+                          tick={{ fill: "var(--text-secondary)", fontSize: 12 }}
+                          axisLine={false}
+                          tickLine={false}
                         />
                         <YAxis
-                          tick={{ fill: "var(--text-muted)", fontSize: 12 }}
+                          tick={{ fill: "var(--text-secondary)", fontSize: 12 }}
+                          axisLine={false}
+                          tickLine={false}
+                          allowDecimals={false}
                         />
-                        <Tooltip />
+                        <Tooltip
+                          contentStyle={{
+                            background: "rgba(7, 15, 29, 0.96)",
+                            border: "1px solid rgba(148, 163, 184, 0.18)",
+                            borderRadius: "16px",
+                            color: "#e6edf7",
+                          }}
+                        />
                         <Bar
                           dataKey="value"
-                          fill="var(--accent-2)"
-                          radius={[6, 6, 0, 0]}
+                          fill="var(--accent)"
+                          radius={[10, 10, 0, 0]}
                         />
                       </BarChart>
                     </ResponsiveContainer>
@@ -245,62 +271,108 @@ const Dashboard = () => {
                 </div>
 
                 <div className="surface p-6">
-                  <h2 className="section-heading">Success Rate</h2>
+                  <h2 className="section-heading">Progress Snapshot</h2>
                   <p className="page-subtitle mt-2">
-                    Offers compared to your total applications.
+                    Use your offer count and success rate to see how efficiently
+                    the pipeline is converting.
                   </p>
-                  <div className="mt-6 surface-2 p-4">
-                    <p className="text-3xl font-semibold text-primary">
-                      {stats.successRate}%
-                    </p>
-                    <p className="text-xs text-secondary">
-                      {stats.byStatus.Offer || 0} offers from {stats.total}{" "}
-                      applications
-                    </p>
+
+                  <div className="mt-6 info-grid">
+                    <div className="info-card">
+                      <p className="info-label">Success rate</p>
+                      <p className="info-value">{stats.successRate}%</p>
+                    </div>
+                    <div className="info-card">
+                      <p className="info-label">Offers received</p>
+                      <p className="info-value">
+                        {stats.byStatus.Offer || 0}
+                      </p>
+                    </div>
+                    <div className="info-card">
+                      <p className="info-label">Most active stage</p>
+                      <p className="info-value">
+                        {statusBreakdown.sort((a, b) => b.value - a.value)[0]
+                          ?.name || "Applied"}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="surface">
-                <div className="flex items-center justify-between app-divider px-6 py-4">
-                  <h2 className="section-heading">Recent Applications</h2>
-                  <span className="text-xs text-secondary">Last 5</span>
+              <div className="surface p-6">
+                <div className="page-header gap-3">
+                  <div>
+                    <h2 className="section-heading">Recent Applications</h2>
+                    <p className="page-subtitle mt-2">
+                      The latest roles you added, updated, or reviewed.
+                    </p>
+                  </div>
+                  <span className="text-xs uppercase tracking-[0.14em] text-secondary">
+                    Last 5
+                  </span>
                 </div>
-                <div className="overflow-x-auto table-container">
-                  <table className="min-w-full text-sm">
-                    <thead>
-                      <tr>
-                        <th className="text-left font-medium">Role</th>
-                        <th className="text-left font-medium">Company</th>
-                        <th className="text-left font-medium">Status</th>
-                        <th className="text-left font-medium">Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {stats.recentJobs.map((application) => (
-                        <tr key={application.id}>
-                          <td className="text-[13px] font-semibold">
-                            {application.position}
-                          </td>
-                          <td className="text-secondary">
+
+                <div className="mt-6 md:hidden mobile-card-list">
+                  {stats.recentJobs.map((application) => (
+                    <article key={application.id} className="job-card">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="job-card-title">{application.position}</p>
+                          <p className="mt-1 text-sm text-secondary">
                             {application.company}
-                          </td>
-                          <td>
-                            <span
-                              className={`badge ${statusClass(
-                                application.status
-                              )}`}
-                            >
-                              {application.status}
-                            </span>
-                          </td>
-                          <td className="text-muted">
-                            {application.date_applied}
-                          </td>
+                          </p>
+                        </div>
+                        <span className={`badge ${statusClass(application.status)}`}>
+                          {application.status}
+                        </span>
+                      </div>
+                      <div className="job-card-meta">
+                        <div className="job-card-row">
+                          <span>Date applied</span>
+                          <span>{application.date_applied}</span>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+
+                <div className="mt-6 hidden md:block">
+                  <div className="table-container overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                      <thead>
+                        <tr>
+                          <th className="text-left font-medium">Role</th>
+                          <th className="text-left font-medium">Company</th>
+                          <th className="text-left font-medium">Status</th>
+                          <th className="text-left font-medium">Date</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {stats.recentJobs.map((application) => (
+                          <tr key={application.id}>
+                            <td className="text-[13px] font-semibold">
+                              {application.position}
+                            </td>
+                            <td className="text-secondary">
+                              {application.company}
+                            </td>
+                            <td>
+                              <span
+                                className={`badge ${statusClass(
+                                  application.status
+                                )}`}
+                              >
+                                {application.status}
+                              </span>
+                            </td>
+                            <td className="text-muted">
+                              {application.date_applied}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </>

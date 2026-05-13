@@ -17,7 +17,7 @@ createRoot(document.getElementById('root')).render(
         newestOnTop
         closeOnClick
         pauseOnHover
-        theme="light"
+        theme="dark"
       />
     </AuthProvider>
   </StrictMode>,

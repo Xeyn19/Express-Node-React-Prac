@@ -79,7 +79,7 @@ const Profile = () => {
       });
       setHasProfile(true);
       setIsEditing(false);
-      toastSuccess("Profile updated");
+      toastSuccess("Profile updated.");
     } catch (saveError) {
       const message =
         saveError?.response?.data?.message ||
@@ -92,96 +92,43 @@ const Profile = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="page-title">Profile</h1>
-        <p className="page-subtitle">
-          Manage your account details and preferences.
-        </p>
+    <div className="space-y-6 lg:space-y-8">
+      <div className="page-header">
+        <div>
+          <h1 className="page-title">Profile</h1>
+          <p className="page-subtitle">
+            Keep your account details and job search preferences updated so the
+            app reflects how you are applying right now.
+          </p>
+        </div>
       </div>
 
-      <div className="surface p-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm text-secondary">Full name</p>
-            <p className="text-lg font-semibold text-primary">
-              {fullName || "Add your name"}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-secondary">Email</p>
-            <p className="text-lg font-semibold text-primary">
-              {user?.email || "you@example.com"}
-            </p>
-          </div>
-        </div>
-
-        {isEditing ? (
-          <form
-            className="mt-6 grid gap-4 sm:grid-cols-2"
-            onSubmit={handleSubmit}
-          >
-          <label className="flex flex-col gap-2 text-sm text-secondary">
-              Preferred role
-              <input
-                type="text"
-                name="preferred_role"
-                value={profile.preferred_role}
-                onChange={handleChange}
-                className="input input-bordered w-full"
-                placeholder="Frontend Engineer"
-                disabled={isLoading}
-              />
-            </label>
-          <label className="flex flex-col gap-2 text-sm text-secondary">
-              Target location
-              <input
-                type="text"
-                name="target_location"
-                value={profile.target_location}
-                onChange={handleChange}
-                className="input input-bordered w-full"
-                placeholder="Remote / Hybrid"
-                disabled={isLoading}
-              />
-            </label>
-            <div className="sm:col-span-2 flex justify-end gap-2">
-              {hasProfile && (
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
-                  onClick={() => setIsEditing(false)}
-                  disabled={isSaving}
-                >
-                  Cancel
-                </button>
-              )}
-              <button
-                type="submit"
-                className={`btn btn-primary btn-sm ${
-                  isSaving ? "btn-disabled" : ""
-                }`}
-                disabled={isSaving || isLoading}
-              >
-                {isSaving ? "Saving..." : "Save Profile"}
-              </button>
+      <div className="grid gap-6 xl:grid-cols-[minmax(280px,0.8fr)_minmax(0,1.2fr)]">
+        <section className="surface p-5 sm:p-6">
+          <h2 className="section-heading">Account Snapshot</h2>
+          <div className="mt-5 info-grid">
+            <div className="info-card">
+              <p className="info-label">Full name</p>
+              <p className="info-value">{fullName || "Add your name"}</p>
             </div>
-          </form>
-        ) : (
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <div className="surface-2 p-4">
-            <p className="text-sm text-secondary">Preferred role</p>
-            <p className="text-base font-semibold text-primary">
-              {profile.preferred_role || "Not set"}
-            </p>
+            <div className="info-card">
+              <p className="info-label">Email</p>
+              <p className="info-value break-all">
+                {user?.email || "you@example.com"}
+              </p>
+            </div>
           </div>
-          <div className="surface-2 p-4">
-            <p className="text-sm text-secondary">Target location</p>
-            <p className="text-base font-semibold text-primary">
-              {profile.target_location || "Not set"}
-            </p>
-          </div>
-            <div className="sm:col-span-2 flex justify-end">
+        </section>
+
+        <section className="surface p-5 sm:p-6 lg:p-7">
+          <div className="page-header gap-4">
+            <div>
+              <h2 className="section-heading">Search Preferences</h2>
+              <p className="page-subtitle mt-2">
+                Save the role and location details you want to optimize around.
+              </p>
+            </div>
+            {!isEditing && (
               <button
                 type="button"
                 className="btn btn-outline btn-sm"
@@ -189,9 +136,81 @@ const Profile = () => {
               >
                 Edit Profile
               </button>
-            </div>
+            )}
           </div>
-        )}
+
+          {isLoading ? (
+            <div className="mt-6 flex items-center gap-2 text-sm text-secondary">
+              <span className="loading loading-spinner loading-sm" />
+              Loading profile...
+            </div>
+          ) : isEditing ? (
+            <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="flex flex-col gap-2 text-sm text-secondary">
+                  Preferred role
+                  <input
+                    type="text"
+                    name="preferred_role"
+                    value={profile.preferred_role}
+                    onChange={handleChange}
+                    className="input input-bordered w-full"
+                    placeholder="Frontend Engineer"
+                    disabled={isLoading}
+                  />
+                </label>
+
+                <label className="flex flex-col gap-2 text-sm text-secondary">
+                  Target location
+                  <input
+                    type="text"
+                    name="target_location"
+                    value={profile.target_location}
+                    onChange={handleChange}
+                    className="input input-bordered w-full"
+                    placeholder="Remote / Hybrid"
+                    disabled={isLoading}
+                  />
+                </label>
+              </div>
+
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                {hasProfile && (
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    onClick={() => setIsEditing(false)}
+                    disabled={isSaving}
+                  >
+                    Cancel
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  className={`btn btn-primary ${isSaving ? "btn-disabled" : ""}`}
+                  disabled={isSaving || isLoading}
+                >
+                  {isSaving ? "Saving..." : "Save Profile"}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div className="mt-6 info-grid sm:grid-cols-2">
+              <div className="info-card">
+                <p className="info-label">Preferred role</p>
+                <p className="info-value">
+                  {profile.preferred_role || "Not set"}
+                </p>
+              </div>
+              <div className="info-card">
+                <p className="info-label">Target location</p>
+                <p className="info-value">
+                  {profile.target_location || "Not set"}
+                </p>
+              </div>
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

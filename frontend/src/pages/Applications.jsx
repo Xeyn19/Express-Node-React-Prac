@@ -1,7 +1,54 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import AlertBanner from "../components/AlertBanner";
 import { authenticatedFetch } from "../lib/api";
 import { toastError, toastSuccess } from "../lib/toast";
+
+const statusOptions = ["All", "Applied", "Interview", "Offer", "Rejected"];
+
+const statusClass = (status) => {
+  switch (status) {
+    case "Interview":
+      return "interview";
+    case "Offer":
+      return "offer";
+    case "Rejected":
+      return "rejected";
+    default:
+      return "applied";
+  }
+};
+
+const ResumeIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    aria-hidden="true"
+  >
+    <path
+      d="M7 3h7l4 4v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M14 3v4h4"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M8 11h8M8 14h8M8 17h5"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
 
 const Applications = () => {
   const [jobs, setJobs] = useState([]);
@@ -60,7 +107,6 @@ const Applications = () => {
       isMounted = false;
     };
   }, []);
-
 
   const normalizedSearch = searchTerm.trim().toLowerCase();
   const filteredJobs = jobs
@@ -158,13 +204,10 @@ const Applications = () => {
         payload.append("resume", editResumeFile);
       }
 
-      const response = await authenticatedFetch(
-        `/api/jobs/${editingJobId}`,
-        {
-          method: "PATCH",
-          data: payload,
-        }
-      );
+      const response = await authenticatedFetch(`/api/jobs/${editingJobId}`, {
+        method: "PATCH",
+        data: payload,
+      });
       const result = response.data || {};
 
       setJobs((previous) =>
@@ -180,7 +223,7 @@ const Applications = () => {
             : job
         )
       );
-      toastSuccess("Application updated");
+      toastSuccess("Application updated.");
       setEditResumeFile(null);
       setEditResumeUrl(result.job?.resume_url ?? editResumeUrl);
       setEditingJobId(null);
@@ -210,12 +253,12 @@ const Applications = () => {
 
     try {
       setIsDeleting(jobId);
-      const response = await authenticatedFetch(`/api/jobs/${jobId}`, {
+      await authenticatedFetch(`/api/jobs/${jobId}`, {
         method: "DELETE",
       });
 
       setJobs((previous) => previous.filter((job) => job.id !== jobId));
-      toastSuccess("Deleted");
+      toastSuccess("Application deleted.");
     } catch (deleteError) {
       const message =
         deleteError?.response?.data?.message ||
@@ -229,79 +272,86 @@ const Applications = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
+    <div className="space-y-6 lg:space-y-8">
+      <div className="page-header">
         <div>
           <h1 className="page-title">Applications</h1>
           <p className="page-subtitle">
-            Track every role you have applied to and keep notes in one place.
+            Search, filter, review, and update every role without losing track
+            of where each opportunity stands.
           </p>
         </div>
-        <Link to="/add-job" className="btn btn-primary btn-sm">
-          Add Job
-        </Link>
+        <div className="page-actions">
+          <Link to="/add-job" className="btn btn-primary btn-sm">
+            Add Job
+          </Link>
+        </div>
       </div>
 
-      <div className="surface p-6">
-        <div className="flex items-center justify-between">
+      <AlertBanner message={error} />
+
+      <section className="surface p-5 sm:p-6 lg:p-7">
+        <div className="page-header gap-4">
           <div>
             <h2 className="section-heading">Application Pipeline</h2>
             <p className="page-subtitle mt-2">
-              Organize your applications as you move through each stage.
+              Use search, filters, and quick edits to keep your job search
+              current.
             </p>
           </div>
-          <span className="text-xs text-secondary">
+          <div className="rounded-full border border-slate-400/15 bg-slate-900/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-secondary">
             {jobs.length
-              ? `Showing ${filteredJobs.length} of ${jobs.length} applications`
+              ? `Showing ${filteredJobs.length} of ${jobs.length}`
               : "No data yet"}
-          </span>
+          </div>
         </div>
 
         <div className="mt-6 space-y-4">
-          <div className="filter-bar flex flex-col gap-3 md:flex-row">
-            <label className="filter-search">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+          <div className="filter-bar">
+            <div className="grid gap-3 lg:grid-cols-[minmax(0,1.2fr)_180px_180px]">
+              <label className="filter-search">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="M20 20l-3.5-3.5" />
+                </svg>
+                <input
+                  type="search"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="Search company or role"
+                  className="input input-bordered w-full"
+                />
+              </label>
+
+              <select
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value)}
+                className="select select-bordered w-full"
               >
-                <circle cx="11" cy="11" r="7" />
-                <path d="M20 20l-3.5-3.5" />
-              </svg>
-              <input
-                type="search"
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="Search company or role"
-                className="input input-bordered w-full"
-              />
-            </label>
-            <select
-              value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value)}
-              className="select select-bordered w-full md:w-40"
-            >
-              <option>All</option>
-              <option>Applied</option>
-              <option>Interview</option>
-              <option>Offer</option>
-              <option>Rejected</option>
-            </select>
-            <select
-              value={dateSort}
-              onChange={(event) => setDateSort(event.target.value)}
-              className="select select-bordered w-full md:w-40"
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-            </select>
+                {statusOptions.map((status) => (
+                  <option key={status}>{status}</option>
+                ))}
+              </select>
+
+              <select
+                value={dateSort}
+                onChange={(event) => setDateSort(event.target.value)}
+                className="select select-bordered w-full"
+              >
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+              </select>
+            </div>
           </div>
 
-          {error && <div className="sr-only">{error}</div>}
           {isLoading && (
             <div className="flex items-center gap-2 text-sm text-secondary">
               <span className="loading loading-spinner loading-sm" />
@@ -310,7 +360,7 @@ const Applications = () => {
           )}
 
           {!isLoading && !jobs.length && !error && (
-            <div className="surface p-6 text-center text-sm text-secondary">
+            <div className="surface-2 empty-state">
               <div className="mx-auto mb-3 empty-icon">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -327,20 +377,21 @@ const Applications = () => {
                   />
                 </svg>
               </div>
-              <p className="font-medium text-primary">
-                No applications yet.
+              <p className="font-semibold text-primary">
+                No applications yet
               </p>
-              <p className="mt-1 text-xs text-secondary">
-                Add your first application to start tracking your progress.
+              <p className="page-subtitle mx-auto mt-1">
+                Add your first application to start building a trackable
+                pipeline.
               </p>
-              <Link to="/add-job" className="btn btn-primary btn-sm mt-4">
+              <Link to="/add-job" className="btn btn-primary mt-4">
                 Add your first application
               </Link>
             </div>
           )}
 
           {!isLoading && jobs.length > 0 && filteredJobs.length === 0 && (
-            <div className="surface p-6 text-center text-sm text-secondary">
+            <div className="surface-2 empty-state">
               <div className="mx-auto mb-3 empty-icon">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -357,165 +408,197 @@ const Applications = () => {
                   />
                 </svg>
               </div>
-              <p className="font-medium text-primary">
-                No applications match your filters.
+              <p className="font-semibold text-primary">
+                No applications match your filters
               </p>
-              <p className="mt-1 text-xs text-secondary">
-                Try a different search or reset the status filter.
+              <p className="page-subtitle mx-auto mt-1">
+                Adjust the status or search term to widen the results.
               </p>
             </div>
           )}
 
           {!isLoading && filteredJobs.length > 0 && (
-            <div className="overflow-x-auto table-container">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr>
-                    <th className="text-left font-medium">Company</th>
-                    <th className="text-left font-medium">Role</th>
-                    <th className="text-left font-medium">Status</th>
-                    <th className="text-left font-medium">Date Applied</th>
-                    <th className="text-left font-medium">Resume</th>
-                    <th className="text-left font-medium">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredJobs.map((job) => (
-                    <tr key={job.id}>
-                      <td className="text-[13px] font-semibold">
-                        {job.company}
-                      </td>
-                      <td className="text-secondary">
-                        {job.position}
-                      </td>
-                      <td>
-                        <span
-                          className={`badge ${job.status.toLowerCase()}`}
-                        >
-                          {job.status}
+            <>
+              <div className="mobile-card-list md:hidden">
+                {filteredJobs.map((job) => (
+                  <article key={job.id} className="job-card">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="job-card-title">{job.position}</p>
+                        <p className="mt-1 text-sm text-secondary">
+                          {job.company}
+                        </p>
+                      </div>
+                      <span className={`badge ${statusClass(job.status)}`}>
+                        {job.status}
+                      </span>
+                    </div>
+
+                    <div className="job-card-meta">
+                      <div className="job-card-row">
+                        <span>Date applied</span>
+                        <span>{job.date_applied}</span>
+                      </div>
+                      <div className="job-card-row">
+                        <span>Resume</span>
+                        <span>
+                          {job.resume_url ? (
+                            <a
+                              href={job.resume_url}
+                              className="resume-link"
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              <ResumeIcon />
+                              View file
+                            </a>
+                          ) : (
+                            <span className="resume-empty">No resume</span>
+                          )}
                         </span>
-                      </td>
-                      <td className="text-muted">
-                        {job.date_applied}
-                      </td>
-                      <td className="text-secondary">
-                        {job.resume_url ? (
-                          <a
-                            href={job.resume_url}
-                            className="resume-link"
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              aria-hidden="true"
-                            >
-                              <path
-                                d="M7 3h7l4 4v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"
-                                stroke="currentColor"
-                                strokeWidth="1.6"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                              <path
-                                d="M14 3v4h4"
-                                stroke="currentColor"
-                                strokeWidth="1.6"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                              <path
-                                d="M8 11h8M8 14h8M8 17h5"
-                                stroke="currentColor"
-                                strokeWidth="1.6"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              />
-                            </svg>
-                            
-                          </a>
-                        ) : (
-                          <span className="resume-empty">No resume</span>
-                        )}
-                      </td>
-                      <td>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            className="btn btn-ghost btn-icon"
-                            onClick={() => openEditModal(job)}
-                            aria-label="Edit application"
-                            title="Edit"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="1.6"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="h-4 w-4"
-                              aria-hidden="true"
-                            >
-                              <path d="M12 20h9" />
-                              <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z" />
-                            </svg>
-                            <span className="sr-only">Edit</span>
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-danger btn-icon"
-                            onClick={() => handleDelete(job.id)}
-                            disabled={isDeleting === job.id}
-                            aria-label="Delete application"
-                            title="Delete"
-                          >
-                            {isDeleting === job.id ? (
-                              <span className="loading loading-spinner loading-xs" />
-                            ) : (
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.6"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="h-4 w-4"
-                                aria-hidden="true"
-                              >
-                                <path d="M3 6h18" />
-                                <path d="M8 6V4h8v2" />
-                                <path d="M6 6l1 14h10l1-14" />
-                                <path d="M10 11v6" />
-                                <path d="M14 11v6" />
-                              </svg>
-                            )}
-                            <span className="sr-only">
-                              {isDeleting === job.id ? "Deleting" : "Delete"}
+                      </div>
+                    </div>
+
+                    <div className="job-card-actions">
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        onClick={() => openEditModal(job)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-danger btn-sm"
+                        onClick={() => handleDelete(job.id)}
+                        disabled={isDeleting === job.id}
+                      >
+                        {isDeleting === job.id ? "Deleting..." : "Delete"}
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+
+              <div className="hidden md:block">
+                <div className="table-container overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead>
+                      <tr>
+                        <th className="text-left font-medium">Company</th>
+                        <th className="text-left font-medium">Role</th>
+                        <th className="text-left font-medium">Status</th>
+                        <th className="text-left font-medium">Date Applied</th>
+                        <th className="text-left font-medium">Resume</th>
+                        <th className="text-left font-medium">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredJobs.map((job) => (
+                        <tr key={job.id}>
+                          <td className="text-[13px] font-semibold">
+                            {job.company}
+                          </td>
+                          <td className="text-secondary">{job.position}</td>
+                          <td>
+                            <span className={`badge ${statusClass(job.status)}`}>
+                              {job.status}
                             </span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                          </td>
+                          <td className="text-muted">{job.date_applied}</td>
+                          <td>
+                            {job.resume_url ? (
+                              <a
+                                href={job.resume_url}
+                                className="resume-link"
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                <ResumeIcon />
+                                View
+                              </a>
+                            ) : (
+                              <span className="resume-empty">No resume</span>
+                            )}
+                          </td>
+                          <td>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                className="btn btn-ghost btn-icon"
+                                onClick={() => openEditModal(job)}
+                                aria-label="Edit application"
+                                title="Edit"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="1.6"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  className="h-4 w-4"
+                                  aria-hidden="true"
+                                >
+                                  <path d="M12 20h9" />
+                                  <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z" />
+                                </svg>
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-danger btn-icon"
+                                onClick={() => handleDelete(job.id)}
+                                disabled={isDeleting === job.id}
+                                aria-label="Delete application"
+                                title="Delete"
+                              >
+                                {isDeleting === job.id ? (
+                                  <span className="loading loading-spinner loading-xs" />
+                                ) : (
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.6"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="h-4 w-4"
+                                    aria-hidden="true"
+                                  >
+                                    <path d="M3 6h18" />
+                                    <path d="M8 6V4h8v2" />
+                                    <path d="M6 6l1 14h10l1-14" />
+                                    <path d="M10 11v6" />
+                                    <path d="M14 11v6" />
+                                  </svg>
+                                )}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
           )}
         </div>
-      </div>
+      </section>
 
       {editingJobId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="w-full max-w-xl surface">
-            <div className="flex items-center justify-between app-divider px-6 py-4">
-              <h3 className="section-heading">
-                Edit Application
-              </h3>
+        <div className="modal-scrim flex items-center justify-center">
+          <div className="modal-panel">
+            <div className="app-divider flex items-center justify-between px-5 py-4 sm:px-6">
+              <div>
+                <h3 className="section-heading">Edit Application</h3>
+                <p className="mt-2 text-sm text-secondary">
+                  Update role details, attach a new resume, or refine your
+                  notes.
+                </p>
+              </div>
               <button
                 type="button"
                 className="btn btn-ghost btn-sm"
@@ -525,7 +608,10 @@ const Applications = () => {
                 Close
               </button>
             </div>
-            <form className="space-y-4 p-6" onSubmit={handleEditSubmit}>
+
+            <form className="space-y-5 p-5 sm:p-6" onSubmit={handleEditSubmit}>
+              <AlertBanner message={error} />
+
               <div className="grid gap-4 md:grid-cols-2">
                 <label className="flex flex-col gap-2 text-sm text-secondary">
                   Company
@@ -545,6 +631,7 @@ const Applications = () => {
                     </span>
                   )}
                 </label>
+
                 <label className="flex flex-col gap-2 text-sm text-secondary">
                   Position
                   <input
@@ -563,6 +650,7 @@ const Applications = () => {
                     </span>
                   )}
                 </label>
+
                 <label className="flex flex-col gap-2 text-sm text-secondary">
                   Status
                   <select
@@ -571,12 +659,12 @@ const Applications = () => {
                     onChange={handleEditChange}
                     className="select select-bordered w-full"
                   >
-                    <option>Applied</option>
-                    <option>Interview</option>
-                    <option>Offer</option>
-                    <option>Rejected</option>
+                    {statusOptions.slice(1).map((status) => (
+                      <option key={status}>{status}</option>
+                    ))}
                   </select>
                 </label>
+
                 <label className="flex flex-col gap-2 text-sm text-secondary">
                   Date Applied
                   <input
@@ -595,6 +683,7 @@ const Applications = () => {
                   )}
                 </label>
               </div>
+
               <label className="flex flex-col gap-2 text-sm text-secondary">
                 Job URL
                 <input
@@ -605,25 +694,28 @@ const Applications = () => {
                   className="input input-bordered w-full"
                 />
               </label>
+
               <label className="flex flex-col gap-2 text-sm text-secondary">
                 Notes
                 <textarea
-                  rows="3"
+                  rows="4"
                   name="notes"
                   value={editForm.notes}
                   onChange={handleEditChange}
                   className="textarea textarea-bordered w-full"
                 />
               </label>
+
               <label className="flex flex-col gap-2 text-sm text-secondary">
                 Resume
                 {editResumeUrl && (
                   <a
                     href={editResumeUrl}
-                    className="text-xs text-secondary underline"
+                    className="resume-link w-fit"
                     target="_blank"
                     rel="noreferrer"
                   >
+                    <ResumeIcon />
                     View current resume
                   </a>
                 )}
@@ -642,12 +734,10 @@ const Applications = () => {
                 )}
               </label>
 
-              {error && <div className="sr-only">{error}</div>}
-
-              <div className="flex justify-end gap-2">
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <button
                   type="button"
-                  className="btn btn-ghost btn-sm"
+                  className="btn btn-ghost"
                   onClick={closeEditModal}
                   disabled={isSaving}
                 >
@@ -655,9 +745,7 @@ const Applications = () => {
                 </button>
                 <button
                   type="submit"
-                  className={`btn btn-primary btn-sm ${
-                    isSaving ? "btn-disabled" : ""
-                  }`}
+                  className={`btn btn-primary ${isSaving ? "btn-disabled" : ""}`}
                   disabled={isSaving}
                 >
                   {isSaving ? "Saving..." : "Save Changes"}

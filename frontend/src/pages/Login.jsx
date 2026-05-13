@@ -1,14 +1,32 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import AuthLayout from "../components/AuthLayout";
+import AlertBanner from "../components/AlertBanner";
 import { apiFetch } from "../lib/api";
 import { toastError, toastInfo, toastSuccess } from "../lib/toast";
 import { getAccessToken } from "../lib/auth";
 import { useAuth } from "../context/AuthContext";
 
-const loginHighlights = [
-  "Track every role, contact, and follow-up from one workspace.",
-  "See your job pipeline clearly with dashboard stats and recent activity.",
-  "Keep resumes, interview stages, and priorities organized without spreadsheets.",
+const highlights = [
+  {
+    title: "Track every active role",
+    copy: "Keep company, stage, date applied, and next-step notes in one focused workspace.",
+  },
+  {
+    title: "See momentum fast",
+    copy: "Use dashboard metrics and recent activity to spot where your pipeline is slowing down.",
+  },
+  {
+    title: "Stay interview-ready",
+    copy: "Attach resumes, capture job links, and review your latest applications from any device.",
+  },
+];
+
+const metrics = [
+  { value: "1", label: "workspace" },
+  { value: "4", label: "stages tracked" },
+  { value: "24/7", label: "cloud access" },
+  { value: "Mobile", label: "responsive flow" },
 ];
 
 const EyeIcon = () => (
@@ -129,9 +147,7 @@ const Login = () => {
       });
       const result = response.data || {};
 
-      const message = result.message || "Login successful.";
-      setError("");
-      toastSuccess(message);
+      toastSuccess(result.message || "Login successful.");
       login({
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
@@ -153,122 +169,73 @@ const Login = () => {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-950 text-white">
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: 'url("/login-bg.jpg")' }}
-        aria-hidden="true"
-      />
-      <div
-        className="absolute inset-0 bg-[linear-gradient(130deg,rgba(6,10,18,0.88)_0%,rgba(6,10,18,0.68)_42%,rgba(6,10,18,0.92)_100%)]"
-        aria-hidden="true"
-      />
-      <div
-        className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(225,29,72,0.26),transparent_32%),radial-gradient(circle_at_bottom_right,rgba(14,165,233,0.22),transparent_28%)]"
-        aria-hidden="true"
-      />
+    <AuthLayout
+      eyebrow="Job Application Tracker"
+      title="Keep your job search organized and moving."
+      description="Review active roles, track stage changes, and sign in to a workspace that stays clear on both mobile and desktop."
+      highlights={highlights}
+      metrics={metrics}
+      formEyebrow="Welcome back"
+      formTitle="Sign in"
+      formDescription="Access your dashboard, applications, profile, and resume records in one place."
+    >
+      <form className="auth-form-grid" onSubmit={handleSubmit}>
+        <label className="form-control w-full">
+          <span className="label-text mb-2">Email</span>
+          <input
+            type="email"
+            name="email"
+            value={loginData.email}
+            onChange={handleChange}
+            className="input input-bordered w-full"
+            placeholder="you@example.com"
+            autoComplete="email"
+            aria-invalid={Boolean(error)}
+          />
+        </label>
 
-      <div className="relative mx-auto flex min-h-screen w-full max-w-7xl items-center px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid w-full gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(380px,460px)] lg:items-center">
-          <section className="order-2 space-y-6 text-center lg:order-1 lg:max-w-2xl lg:text-left">
-            <div className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/8 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/80 shadow-lg shadow-black/10 backdrop-blur-md lg:justify-start">
-              Job Application Tracker
-            </div>
+        <label className="form-control w-full">
+          <span className="label-text mb-2">Password</span>
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              value={loginData.password}
+              onChange={handleChange}
+              className="input input-bordered w-full pr-12"
+              placeholder="Enter password"
+              autoComplete="current-password"
+              aria-invalid={Boolean(error)}
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-2 my-auto text-secondary transition hover:text-primary"
+              onClick={() => setShowPassword((previous) => !previous)}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+            </button>
+          </div>
+        </label>
 
-            <div className="space-y-4">
-              <h1 className="text-4xl font-semibold leading-tight text-white sm:text-5xl lg:text-6xl">
-                Keep every application moving with a clearer hiring pipeline.
-              </h1>
-              <p className="mx-auto max-w-2xl text-sm leading-7 text-slate-200 sm:text-base lg:mx-0 lg:max-w-xl">
-                Manage roles, monitor interview progress, and keep your next
-                opportunity visible the moment you open the site.
-              </p>
-            </div>
+        <AlertBanner message={error} />
 
-            <div className="grid gap-3 text-left sm:grid-cols-3">
-              {loginHighlights.map((highlight) => (
-                <div
-                  key={highlight}
-                  className="rounded-2xl border border-white/12 bg-white/8 p-4 text-sm leading-6 text-slate-100 shadow-lg shadow-black/10 backdrop-blur-sm"
-                >
-                  {highlight}
-                </div>
-              ))}
-            </div>
-          </section>
+        <button
+          type="submit"
+          className={`btn btn-primary mt-2 w-full ${isSubmitting ? "btn-disabled" : ""}`}
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? "Signing In..." : "Login"}
+        </button>
 
-          <section className="order-1 lg:order-2">
-            <div className="mx-auto w-full max-w-md rounded-[28px] border border-white/15 bg-slate-950/72 p-5 shadow-2xl shadow-black/35 backdrop-blur-xl sm:p-7">
-              <div className="mb-6 space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-200/80">
-                  Welcome back
-                </p>
-                <h2 className="text-3xl font-semibold text-white">Sign in</h2>
-                <p className="text-sm leading-6 text-slate-300">
-                  Access your dashboard, applications, and profile in one place.
-                </p>
-              </div>
-
-              <form className="space-y-4" onSubmit={handleSubmit}>
-                <label className="form-control w-full">
-                  <span className="mb-1 text-xs font-medium uppercase tracking-[0.18em] text-slate-300">
-                    Email
-                  </span>
-                  <input
-                    type="email"
-                    name="email"
-                    value={loginData.email}
-                    onChange={handleChange}
-                    className="input input-bordered w-full border-white/10 bg-white/7 text-white placeholder:text-slate-400"
-                    placeholder="you@example.com"
-                  />
-                </label>
-
-                <label className="form-control w-full">
-                  <span className="mb-1 text-xs font-medium uppercase tracking-[0.18em] text-slate-300">
-                    Password
-                  </span>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={loginData.password}
-                      onChange={handleChange}
-                      className="input input-bordered w-full border-white/10 bg-white/7 pr-12 text-white placeholder:text-slate-400"
-                      placeholder="Enter password"
-                    />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-2 my-auto text-slate-400 transition hover:text-white"
-                      onClick={() => setShowPassword((previous) => !previous)}
-                      aria-label={showPassword ? "Hide password" : "Show password"}
-                    >
-                      {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-                    </button>
-                  </div>
-                </label>
-
-                {error && <div className="sr-only">{error}</div>}
-
-                <button
-                  type="submit"
-                  className={`btn btn-primary mt-3 w-full border-0 bg-sky-500 text-slate-950 hover:bg-sky-400 ${isSubmitting ? "btn-disabled" : ""}`}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? "Signing In..." : "Login"}
-                </button>
-                <Link
-                  to="/register"
-                  className="btn btn-outline w-full border-white/15 text-white hover:border-white/25 hover:bg-white/10"
-                >
-                  Don't have an account? Register.
-                </Link>
-              </form>
-            </div>
-          </section>
-        </div>
-      </div>
-    </div>
+        <p className="auth-footer-text">
+          Don&apos;t have an account?{" "}
+          <Link to="/register" className="auth-link">
+            Create one now
+          </Link>
+        </p>
+      </form>
+    </AuthLayout>
   );
 };
 
