@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
@@ -12,13 +12,7 @@ const navigation = [
 const AppLayout = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
-    if (typeof window === "undefined") {
-      return true;
-    }
-
-    return window.innerWidth >= 768;
-  });
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const fullName = user
     ? `${user.first_name || user.firstName || ""} ${user.last_name || user.lastName || ""}`.trim()
@@ -46,32 +40,6 @@ const AppLayout = () => {
     setIsSidebarOpen(false);
   };
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen((previous) => !previous);
-  };
-
-  const handleNavClick = () => {
-    if (typeof window !== "undefined" && window.innerWidth < 768) {
-      closeSidebar();
-    }
-  };
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return undefined;
-    }
-
-    const mediaQuery = window.matchMedia("(min-width: 768px)");
-
-    const syncSidebarState = (event) => {
-      setIsSidebarOpen(event.matches);
-    };
-
-    mediaQuery.addEventListener("change", syncSidebarState);
-
-    return () => mediaQuery.removeEventListener("change", syncSidebarState);
-  }, []);
-
   return (
     <div className="app-shell">
       {isSidebarOpen && (
@@ -84,14 +52,11 @@ const AppLayout = () => {
 
       <div className="flex min-h-screen">
         <aside
-          className={`app-sidebar fixed inset-y-0 left-0 z-40 flex w-72 transform flex-col overflow-hidden transition-all duration-200 md:relative md:inset-auto md:flex-none ${
-            isSidebarOpen
-              ? "translate-x-0 md:w-72 md:border-r"
-              : "-translate-x-full md:w-0 md:translate-x-0 md:border-r-0"
+          className={`app-sidebar fixed inset-y-0 left-0 z-40 flex w-72 transform flex-col transition-transform duration-200 md:static md:translate-x-0 ${
+            isSidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <div className="flex items-start justify-between px-6 py-6">
-            <div>
+          <div className="px-6 py-6">
             <div className="app-logo">
               <span className="app-logo-accent">Job</span>
               <span className="app-logo-track">Track</span>
@@ -99,28 +64,6 @@ const AppLayout = () => {
             <p className="mt-3 text-sm text-secondary">
               Keep your pipeline focused, searchable, and easy to act on.
             </p>
-            </div>
-            <button
-              type="button"
-              className="btn btn-ghost btn-sm md:hidden"
-              onClick={closeSidebar}
-              aria-label="Close navigation"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                className="h-5 w-5"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
           </div>
 
           <nav className="app-nav px-3 pb-6">
@@ -128,7 +71,7 @@ const AppLayout = () => {
               <NavLink
                 key={item.to}
                 to={item.to}
-                onClick={handleNavClick}
+                onClick={closeSidebar}
                 className={({ isActive }) =>
                   ["app-nav-item", isActive ? "is-active" : ""]
                     .filter(Boolean)
@@ -156,9 +99,9 @@ const AppLayout = () => {
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                className="btn btn-ghost btn-sm"
-                onClick={toggleSidebar}
-                aria-label={isSidebarOpen ? "Close navigation" : "Open navigation"}
+                className="btn btn-ghost btn-sm md:hidden"
+                onClick={() => setIsSidebarOpen(true)}
+                aria-label="Open navigation"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -168,19 +111,11 @@ const AppLayout = () => {
                   strokeWidth="1.8"
                   className="h-5 w-5"
                 >
-                  {isSidebarOpen ? (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  ) : (
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M4 6h16M4 12h16M4 18h16"
-                    />
-                  )}
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 </svg>
               </button>
               <div>
